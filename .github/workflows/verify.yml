@@ -1,0 +1,33 @@
+name: Verify Blueprint
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: skills/iysl-blueprint
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: skills/iysl-blueprint/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: node scripts/check-design.js
+      - run: node evals/check.mjs examples/story.json evals/fixtures/example-script.md
+      - run: node evals/check-report.mjs examples/report.html evals/fixtures/explain-script.md

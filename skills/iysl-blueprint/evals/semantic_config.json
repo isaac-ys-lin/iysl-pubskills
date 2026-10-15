@@ -1,0 +1,93 @@
+{
+  "purpose": "test-heuristic-only",
+  "runtime_authoritative": false,
+  "recommended_threshold": 0.42,
+  "fallback_positive_concepts": [
+    "blueprint",
+    "adaptation",
+    "finished"
+  ],
+  "positive_concepts": {
+    "blueprint": {
+      "weight": 0.4,
+      "phrases": [
+        "Blueprint",
+        "藍圖",
+        "iysl-blueprint"
+      ]
+    },
+    "adaptation": {
+      "weight": 0.3,
+      "phrases": [
+        "套用",
+        "修改",
+        "改成",
+        "restyle",
+        "design",
+        "整理",
+        "選圖",
+        "推薦",
+        "產生",
+        "generate",
+        "select",
+        "簡報",
+        "做成",
+        "deck",
+        "PowerPoint",
+        "報告",
+        "report",
+        "chart"
+      ]
+    },
+    "finished": {
+      "weight": 0.8,
+      "phrases": [
+        "會議講稿",
+        "meeting notes",
+        "文字稿",
+        "scripts",
+        "outlines",
+        "finished",
+        "完整檔案"
+      ]
+    }
+  },
+  "negative_concepts": {
+    "maintenance": {
+      "weight": 0.9,
+      "exclusive": true,
+      "phrases": [
+        "更新 Blueprint設計系統",
+        "發布網站",
+        "維護設計系統",
+        "update the design system"
+      ]
+    },
+    "architecture": {
+      "weight": 0.9,
+      "exclusive": true,
+      "phrases": [
+        "software architecture",
+        "architecture blueprint",
+        "軟體架構",
+        "建築藍圖"
+      ]
+    },
+    "outline_only": {
+      "weight": 0.9,
+      "exclusive": true,
+      "phrases": [
+        "五頁大綱",
+        "image-prompt",
+        "圖像提示詞",
+        "只要大綱",
+        "outline-only"
+      ]
+    }
+  },
+  "exclusive_negative_concepts": [
+    "maintenance",
+    "architecture",
+    "outline_only"
+  ]
+}

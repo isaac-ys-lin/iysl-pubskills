@@ -1,0 +1,22 @@
+interface:
+  display_name: "iysl-blueprint"
+  short_description: "Build editable decks, reports, and charts in Blueprint style."
+  default_prompt: "Use $iysl-blueprint 把這份文字稿做成 Blueprint 簡報：先寫每頁一句判斷的故事線，每頁配一個主視覺，圖表用可編輯的原生圖表，保留所有數字與出處。"
+compatibility:
+  canonical_format: "agent-skills"
+  adapter_targets:
+    - "openai"
+    - "generic"
+  activation:
+    mode: "implicit"
+    paths: []
+  execution:
+    context: "inline"
+    shell: "bash"
+  trust:
+    source_tier: "local"
+    remote_inline_execution: "forbid"
+    remote_metadata_policy: "allow-metadata-only"
+  degradation:
+    openai: "native-implicit-skill"
+    generic: "description-routed"

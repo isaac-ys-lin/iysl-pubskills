@@ -1,0 +1,62 @@
+---
+name: iysl-blueprint
+description: Create finished PowerPoint decks with editable charts, HTML reports, and standalone SVG charts using Blueprint's blue-and-gray visual style; also restyle existing PowerPoint, Word, Excel, HTML or SVG while preserving data and meaning. Use for Blueprint／藍圖 presentations and reports, or turning scripts, outlines and meeting notes into these finished deliverables. Exclude software or architecture blueprints, design-system maintenance, outline-only requests, and image-prompt decks.
+metadata:
+  compatibility: PPTX assembly requires Node.js 22 or later and npm (run npm ci once in the skill folder); the SVG chart renderer alone needs only Node.js. LibreOffice or PowerPoint for Mac is optional for page previews.
+---
+
+# Blueprint
+
+把文字稿整理成簡報或 HTML 報告，也能將既有檔案套用設計層；以原稿和原檔為內容依據。
+
+## 原則
+
+1. 觀點在前，證據在後。
+2. 一頁一個清楚的判斷：標題 `claim` 寫結論，主題放頁首小字 `kicker`。
+3. 先寫結論，再選最能支持它的圖或版型。
+4. 放不下就刪內容或拆頁，不縮字級。
+5. `claim` 點名的數字與項目要在當頁可見，強調項目要與主張一致。
+
+每個版型自帶一個主張；稿子撐不起就換版型，未決事項用無 `tag`／`focus` 的 `list` 或 `columns`。各版型的主張、欄位與容量見 [版型說明](references/layouts.md)。
+
+常見骨架是工具箱，不是必填清單：
+
+- 決策型：封面 → 主管摘要 → 現況／需求 → 證據 → 診斷或方案 → 決議事項；無數字時，封面後以帶 `focus` 的 `statement` 開場。每張證據頁都要被摘要或決議採用，孤立頁刪去。
+- 說明型：封面 → 重點摘要 → 拆解 → 流程或時程 → 下一步。
+
+## 資料底線
+
+- 不編造數字；沒有可畫的數字就不放圖表。無日期的流程用 `process`，不捏造月份。
+- 畫面上的順序、期限、負責人與原因取自原稿；推論寫在 `notes`。
+- 0 是觀察值。論證需要、讀者會以為有的數字若未給，在原位標「未提供」，並列入當頁來源列；只是版面有那一格而稿子沒提，就整格省略。缺值輸入與各圖處理方式見 [版型說明](references/layouts.md)和[圖表選單](references/charts.md)。
+- 每頁填 `sources.source`；單位、期間只填已知內容。虛構稿註明「虛構示意資料」。推導值的算法與原始數字放當頁 `notes`；需要觀眾看見時寫 `sources.more`。`sources.more` 會上投影片，`notes` 不會；格式見 [驗收說明](evals/README.md)。
+
+## 流程
+
+以下指令從 skill 根目錄執行；需要 Node 22 以上，缺少 `node_modules` 時執行 `npm ci`。先建立 `out/`，輸出統一放在此處；`script.md` 換成本次原稿。
+
+1. 讀文字稿，確認聽眾、目的、可用數字、來源與資料缺口。使用者說明的背景優先；聽眾或目的不明且會改變取捨時，先問一次。
+2. 選合適的骨架，寫故事線和每頁一句結論。
+3. 依 [版型說明](references/layouts.md)挑支撐結論的版型；需要圖表時依 [圖表選單](references/charts.md)選圖。
+4. 寫 `out/story.json`，每張內容頁在 `notes` 放 1～3 句講稿（要說的話、資料限制），計算另列。執行 `node evals/check.mjs out/story.json script.md` 核對；範例：`node evals/check.mjs examples/story.json evals/fixtures/example-script.md`。
+5. 執行 `node scripts/pptx.js out/story.json out/deck.pptx` 建檔。
+6. 依 [預覽與交付](references/layouts.md#預覽與交付)執行 `node scripts/preview.js out/deck.pptx out/preview`；輸出 `page-N.png`、`sheet.png`（整份概覽）、`deck.pdf`。0 項容量警告只代表未偵測到溢出，仍逐頁找孤字與不均勻換行。
+7. 依警告和預覽修正最弱的一頁，再重建、重驗。能派 subagent 時，可請不同 subagent 對照原稿與需求，分別檢查數字、版面和敘事，再整合修正。交付集中列：核心判斷、缺資料／未完成頁、最弱頁修改前後及原因、哪些圖為原生可編輯／SVG，以及「實際在 PowerPoint 改一個原生圖數值：完成／未驗」。編輯限制見 [設計差異](docs/design-diff.md)。
+
+## 設計層與驗證
+
+要改成自己的設計或流程時，讀 [改造步驟](docs/make-it-yours.md)。
+
+預設全球藍設計層：白底封面、深藍章節與襯線展示標題；B′ 深藍及 clay 為選用範例。切換設計層與檢查自訂配色見 [設計層說明](design/README.md)。逐頁檢查判斷、數字、單位、期間、來源、缺值、遮擋與閱讀順序。驗收器通過只證明結構、數字對照和程式可建檔；獨立驗收見 [有數字稿](evals/with-numbers.md)與[無數字稿](evals/without-numbers.md)。
+
+## 文字稿 → 報告
+
+讀者要連續閱讀、轉寄或列印時，依 [報告流程](references/report.md)從元件庫組成 HTML。
+先寫讀者要帶走的一句話與每節判斷；有資料才加圖，圖說交代單位、期間與來源。
+使用 `node scripts/theme-css.js report.html` 套用生效的設計層，再用 `node evals/check-report.mjs report.html script.md` 核對。
+
+## 套用到既有檔案
+
+先讀 [格式與保留原則](references/formats.md)，在副本上只換目標圖表或圖片。
+Office 檔可用 `node scripts/extract.js 原檔 out.json` 擷取文字、表格與可讀的圖表快取。
+交付時說明修改範圍、數據來源、讀不到的部分與實際預覽方式。

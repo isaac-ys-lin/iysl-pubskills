@@ -1,0 +1,115 @@
+{
+  "recommended_threshold": 0.42,
+  "should_trigger": [
+    {
+      "text": "把這份會議講稿做成 Blueprint 簡報，要有圖表。",
+      "family": "script-to-deck"
+    },
+    {
+      "text": "Turn these meeting notes into a Blueprint PowerPoint deck with editable charts.",
+      "family": "script-to-deck-en"
+    },
+    {
+      "text": "把這份文字稿做成 Blueprint HTML 報告，主管要能直接讀和列印。",
+      "family": "script-to-report"
+    },
+    {
+      "text": "Write this up as a Blueprint-styled HTML report with charts.",
+      "family": "script-to-report-en"
+    },
+    {
+      "text": "用 Blueprint 版型把商品說明文字稿做成 10 頁簡報。",
+      "family": "script-to-deck-product"
+    },
+    {
+      "text": "把這份 PowerPoint 改成 Blueprint 設計，保留所有數據。",
+      "family": "pptx"
+    },
+    {
+      "text": "Use Blueprint design for this Word report.",
+      "family": "docx"
+    },
+    {
+      "text": "請依 Blueprint 規範修改 Excel 圖表，圖以 SVG 優先。",
+      "family": "xlsx"
+    },
+    {
+      "text": "套用 Blueprint 到這份 HTML 簡報。",
+      "family": "html"
+    },
+    {
+      "text": "依 Blueprint 設計整理這張 SVG，缺少原始資料的圖先保留。",
+      "family": "svg"
+    },
+    {
+      "text": "Use $iysl-blueprint to restyle the attached presentation.",
+      "family": "explicit"
+    },
+    {
+      "text": "用 Blueprint 依這份資料自動推薦並選出最適合的圖表，不用讓我逐一挑。",
+      "family": "chart-selection"
+    },
+    {
+      "text": "依 Blueprint 圖表範例，把這些前後數字做成 SVG 啞鈴圖，附原始資料。",
+      "family": "chart-generation"
+    },
+    {
+      "text": "Use Blueprint to decide whether a waterfall or a trend chart explains this data better.",
+      "family": "chart-selection-en"
+    },
+    {
+      "text": "把這份會議講稿做成可編輯 PowerPoint 簡報，直接交付完整檔案。",
+      "family": "generic-finished-deck"
+    },
+    {
+      "text": "Turn these meeting notes into a finished HTML report with charts.",
+      "family": "generic-finished-report"
+    },
+    {
+      "text": "用藍圖版型做成簡報，保留原始數據。",
+      "family": "blueprint-zh"
+    }
+  ],
+  "should_not_trigger": [
+    {
+      "text": "把簡報背景換成淺藍色。",
+      "family": "generic"
+    },
+    {
+      "text": "更新 Blueprint 設計系統的 tokens 並發布網站。",
+      "family": "maintenance"
+    },
+    {
+      "text": "查詢示範公司的季度財報。",
+      "family": "research"
+    },
+    {
+      "text": "把這份逐字稿做成五頁大綱。",
+      "family": "outline"
+    },
+    {
+      "text": "修正文書錯字，不要改版面。",
+      "family": "copy"
+    },
+    {
+      "text": "把這份演講稿整理成 Mode A 圖像提示詞與簡報大綱。",
+      "family": "deck-outline"
+    },
+    {
+      "text": "Design a software architecture blueprint for our database service.",
+      "family": "architecture"
+    },
+    {
+      "text": "請規劃軟體架構藍圖，列出模組與 API。",
+      "family": "architecture-zh"
+    },
+    {
+      "text": "Make a Blueprint image-prompt deck and outline, without a finished presentation.",
+      "family": "image-prompts"
+    },
+    {
+      "text": "Blueprint 是什麼意思？",
+      "family": "name-only"
+    }
+  ]
+}

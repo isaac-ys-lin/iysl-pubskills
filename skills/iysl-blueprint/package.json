@@ -1,0 +1,28 @@
+{
+  "name": "iysl-blueprint",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/isaac-ys-lin/iysl-pubskills.git"
+  },
+  "type": "module",
+  "description": "Blueprint 簡報 skill：文字稿變成故事線與可編輯的 PowerPoint",
+  "scripts": {
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@resvg/resvg-js": "2.6.2",
+    "jszip": "3.10.1",
+    "pptxgenjs": "4.0.1"
+  },
+  "overrides": {
+    "pptxgenjs": {
+      "image-size": "2.0.4"
+    }
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
