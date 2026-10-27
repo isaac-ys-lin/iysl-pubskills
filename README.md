@@ -25,9 +25,9 @@ Claude Code 可用 `/iysl-blueprint`。首次製作 PPTX／PNG 時，可請 agen
 
 | Skill | 用途 | 文件 |
 | --- | --- | --- |
-| `iysl-blueprint` | 可編輯 PowerPoint 圖表、HTML 報告、SVG／PNG 圖表，以及既有檔案改版指引 | [完整使用說明](skills/iysl-blueprint/README.md) |
+| `iysl-blueprint` | 可編輯 PowerPoint 圖表、閱讀型簡報、HTML 報告與 PDF、SVG／PNG 圖表，以及既有檔案指定圖表改版 | [完整使用說明](skills/iysl-blueprint/README.md) |
 
-Blueprint 附有虛構範例、設計設定及測試。簡報產生不需 Office；自動逐頁預覽另需 LibreOffice 或 macOS PowerPoint，以及 Poppler、FFmpeg。字型替代、圖表編輯限制與驗收方式見完整說明。
+Blueprint 附有虛構範例、設計設定及測試。簡報產生不需 Office；自動逐頁預覽另需 LibreOffice 或 macOS PowerPoint，以及 Poppler、FFmpeg；報告印 PDF 另需 Chrome、Edge、Chromium 或 Brave。字型替代、圖表編輯限制與驗收方式見完整說明。
 
 ## 本機試用與驗證
 

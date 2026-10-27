@@ -30,4 +30,4 @@ jobs:
       - run: npm test
       - run: node scripts/check-design.js
       - run: node evals/check.mjs examples/story.json evals/fixtures/example-script.md
-      - run: node evals/check-report.mjs examples/report.html evals/fixtures/explain-script.md
+      - run: node evals/check-report.mjs examples/report.html evals/fixtures/explain-script.md examples/report.json

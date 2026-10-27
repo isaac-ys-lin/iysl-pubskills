@@ -29,7 +29,8 @@ printf 'fake PDF' > "$outdir/deck.pdf"
 printf 'pdftoppm\\n' >> "$FAKE_LOG"
 printf '%s\\n' "$@" >> "$FAKE_LOG"
 for arg do prefix="$arg"; done
-printf 'fake PNG' > "\${prefix}-1.png"
+n=1
+while [ "$n" -le "\${FAKE_PAGES:-2}" ]; do printf 'fake PNG' > "\${prefix}-$n.png"; n=$((n + 1)); done
 `, { mode: 0o755 });
     writeFileSync(join(bin, 'ffmpeg'), `#!/bin/sh
 printf 'ffmpeg\\n' >> "$FAKE_LOG"
@@ -51,6 +52,16 @@ printf 'fake sheet' > "$sheet"
     assert.ok(existsSync(join(out, 'sheet.png')));
     assert.match(result.stderr, /替代字型.*只能檢查版面/);
     assert.match(result.stdout, /page-1\.png/);
+
+    // One page: ffmpeg's xstack needs two inputs, so the preview skips the sheet instead of failing.
+    rmSync(log);
+    const single = join(dir, 'single');
+    const one = spawnSync(process.execPath, [script, deck, single], {
+      encoding: 'utf8', env: { ...process.env, PATH: bin, FAKE_LOG: log, FAKE_PAGES: '1' },
+    });
+    assert.equal(one.status, 0, one.stderr);
+    assert.ok(!readFileSync(log, 'utf8').includes('ffmpeg'));
+    assert.ok(existsSync(join(single, 'page-1.png')) && !existsSync(join(single, 'sheet.png')));
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
@@ -78,6 +89,48 @@ test('executable() finds Windows programs through PATHEXT', () => {
     const env = { PATH: dir, PATHEXT: '.COM;.EXE;.CMD' };
     assert.equal(executable('soffice', { platform: 'win32', env }), join(dir, 'soffice.EXE'));
     assert.equal(executable('missing', { platform: 'win32', env }), null);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+// PowerPoint is installed but its automation fails (for example error -9074 when another deck has a dialog open).
+const powerPoint = process.platform === 'darwin' && existsSync('/Applications/Microsoft PowerPoint.app');
+test('failed PowerPoint automation falls back to LibreOffice, else reports the preview as blocked', { skip: !powerPoint && 'needs PowerPoint for Mac' }, () => {
+  const dir = mkdtempSync(join(tmpdir(), 'blueprint-preview-'));
+  try {
+    const bin = join(dir, 'bin'), deck = join(dir, 'deck.pptx');
+    mkdirSync(bin);
+    writeFileSync(deck, 'fake deck');
+    writeFileSync(join(bin, 'osascript'), `#!/bin/sh
+echo 'execution error: Microsoft PowerPoint got an error: An error of type -9074 has occurred. (-9074)' >&2
+exit 1
+`, { mode: 0o755 });
+    // The blocked branch needs no LibreOffice at all; an installed copy outside PATH would be found by install path.
+    if (!existsSync('/Applications/LibreOffice.app/Contents/MacOS/soffice')) {
+      const blocked = spawnSync(process.execPath, [script, deck, join(dir, 'blocked')], { encoding: 'utf8', env: { ...process.env, PATH: bin } });
+      assert.equal(blocked.status, 1);
+      assert.match(blocked.stderr, /PowerPoint 轉檔失敗（.*-9074.*）.*受阻/);
+      assert.doesNotMatch(blocked.stderr, /node:internal|at /);
+      assert.ok(existsSync(deck));
+    }
+
+    writeFileSync(join(bin, 'soffice'), `#!/bin/sh
+while [ "$#" -gt 0 ]; do
+  if [ "$1" = '--outdir' ]; then outdir="$2"; fi
+  shift
+done
+printf 'fake PDF' > "$outdir/deck.pdf"
+`, { mode: 0o755 });
+    writeFileSync(join(bin, 'pdftoppm'), `#!/bin/sh
+for arg do prefix="$arg"; done
+printf 'fake PNG' > "\${prefix}-1.png"
+`, { mode: 0o755 });
+    const out = join(dir, 'out');
+    const fallback = spawnSync(process.execPath, [script, deck, out], { encoding: 'utf8', env: { ...process.env, PATH: bin } });
+    assert.equal(fallback.status, 0, fallback.stderr);
+    assert.match(fallback.stderr, /PowerPoint 轉檔失敗.*改用 LibreOffice/);
+    assert.ok(existsSync(join(out, 'page-1.png')));
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

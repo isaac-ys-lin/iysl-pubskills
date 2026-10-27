@@ -26,15 +26,28 @@ BLUEPRINT_TOKENS=out/mine.json node scripts/pptx.js examples/story.json out/mine
 
 檢查若有「失敗」，先修好再建檔；「警告」要看是否需直接標值或改用表格。有 PowerPoint，或裝了 LibreOffice，且有 `pdftoppm`、`ffmpeg` 時，分別執行 `node scripts/preview.js out/original.pptx out/preview-original` 與 `node scripts/preview.js out/mine.pptx out/preview-mine`。用同一份 `examples/story.json` 的兩版逐頁並排，先改最弱的一頁。沒有兩種簡報程式時，可先看 SVG 圖表，整頁仍待預覽。
 
-報告也用同一設計層；先複製，才修改 HTML：
+報告也用同一設計層；由 `report.json` 重建時，樣式與圖表會一起換色：
 
 ```sh
-cp examples/report.html out/mine-report.html
-BLUEPRINT_TOKENS=out/mine.json node scripts/theme-css.js out/mine-report.html
+BLUEPRINT_TOKENS=out/mine.json node scripts/report.js examples/report.json out/mine-report.html
 node evals/check-report.mjs out/mine-report.html evals/fixtures/explain-script.md
 ```
 
-用瀏覽器看報告。若報告嵌入的是由 `scripts/svg.js` 產生的 SVG，換設計層後也要用同一份圖表 JSON 重產。
+用瀏覽器看報告。手工組成的 HTML 報告用 `BLUEPRINT_TOKENS=out/mine.json node scripts/theme-css.js 報告.html` 只換樣式；其中由 `scripts/svg.js` 產生的 SVG，要用同一份圖表 JSON 重產。
+
+### 依媒介調整字級
+
+現場簡報由設計層 `type` 控制（設計 px，2 px = 1 pt）；閱讀版由 `design/read.json` 覆寫；HTML 螢幕由可選的 `screen.type` 控制（CSS px）；PDF 列印由 `print.type` 控制（pt）。色彩與字型家族繼續共用。內建全球藍的螢幕設定如下（clay／blue 範例的 `display` 為 52）：
+
+```json
+"screen": { "type": { "body": 16, "small": 12, "sub": 18, "title": 28, "display": 48 } }
+```
+
+把這個區塊放進舊自訂設計層後，調整簡報字級就不會連帶改變 HTML 正文與標題。沒有填的螢幕欄位仍用舊換算法：對應 `type` 的 `px / 2`，其中 `small` 對應 `label`。報告 SVG 採獨立字級預設；viewBox units 須按最終容器換算，詳見全交付索引。
+
+正式預設、Office 指定目標的操作指引、圖檔名義尺寸與縮放公式統一見[全交付字級索引](../design/README.md#全交付字級索引)。這組預設已採用；修改自訂層時，用既有 `BLUEPRINT_TOKENS` 選副本，閱讀版仍由 `design/read.json` 覆寫，單改 token 的正文不會改變閱讀版。
+
+以相同原稿與文件規格重產，核對警告、溢出、換行與分頁差異。保留原稿數字與限制，放不下先修版型、重排或拆頁。實看現場觀看距離、閱讀版 A4 縮印、HTML 窄螢幕、PDF 原尺寸的小字與來源；記錄名義字級、最終尺寸與實際縮放。XML／CSS 核對只證明設定，不能證明實際可讀性。
 
 ### 故意做壞，再修好
 

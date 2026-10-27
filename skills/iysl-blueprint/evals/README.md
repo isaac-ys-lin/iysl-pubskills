@@ -9,9 +9,9 @@ node evals/check.mjs examples/story.json evals/fixtures/example-script.md
 node evals/check.mjs out/story.json script.md
 ```
 
-check 先用 pptx.js 的 `validateStory` 核對結構，再確認每頁 `claim` 與 `sources.source` 非空。數字掃描涵蓋根層 `title`／`date`，以及每頁 `claim`／`kicker`／`lede`／`note`、`metric.value`／`label`／`unit`、`sources.source`／`unit`／`more`、`visual` 內的所有數值和字串；因此表格、方案值、標籤與來源列都會核對。`sources.period` 多半是日期區間，不做數字比對，交給人工核對。`digits` 與數字 `focus` 索引是控制欄位，不算資料。最後實際呼叫 `build` 在記憶體產生完整 PPTX，不寫入檔案；保存交付檔仍使用 `node scripts/pptx.js out/story.json out/deck.pptx`。
+check 先用 pptx.js 的 `validateStory` 核對結構，再確認每頁 `claim` 與 `sources.source` 非空。數字掃描涵蓋根層 `title`／`date`，以及每頁 `claim`／`kicker`／`lede`／`note`／`takeaway`／`points`／`footnotes`、`metric.value`／`label`／`unit`、`sources.source`／`unit`／`more`、`visual` 內的所有數值和字串（含 panels 每格的 `title`、`visual` 與 `note`）；因此表格、方案值、標籤與來源列都會核對。正文的註腳記號「(N)」在 N 介於 1 與當頁 `footnotes` 數量之間時視為記號、不當數字；超出註腳數的「(N)」照常核對。panels 的 `split` 是寬度比例，不核對。`sources.period` 多半是日期區間，不做數字比對，交給人工核對。`digits` 與數字 `focus` 索引是控制欄位，不算資料。最後實際呼叫 `build` 在記憶體產生完整 PPTX，不寫入檔案；保存交付檔仍使用 `node scripts/pptx.js out/story.json out/deck.pptx`。
 
-警告包含：`claim` 中的數字在當頁實際使用的 `visual`／`metric`／`lede`／`visual.body`／畫面 `note` 找不到（沿用百分比／比例別名、圖表顯示 model 與整份簡報的類別折疊，含漏斗轉換率／流失標籤、數字格增減）；非封面頁 `notes` 空白或只有「計算：／算法：」行；文字超出容量或指定欄位末行孤字。講稿、來源列及未繪製欄位不代替主視覺佐證。換行警告列出原始欄位路徑、估算行數與上限；估算沿用字寬並接受 LF／CRLF／CR，實際字型、英文整詞換行與不均勻斷行仍需預覽。
+警告包含：`claim` 中的數字在當頁實際使用的 `visual`／`metric`／`lede`／`visual.body`／畫面 `note` 找不到（沿用百分比／比例別名、圖表顯示 model 與整份簡報的類別折疊，含漏斗轉換率／流失標籤、數字格增減）；現場簡報非封面頁 `notes` 空白或只有「計算：／算法：」行（閱讀型不檢查講稿）；文字超出容量或指定欄位末行孤字；標題（含封面）估算超過兩行；閱讀型簡報另有內容頁填滿低於 70%（數字格、流程、並列、時程、一句話頁、清單、方案比較、收尾待辦、主管摘要，以及兩格都是文字或清單的 panels；會拉伸的版型以內容自然高度估算），與證據頁右欄空白（沒有 `takeaway`、`points` 或 `note`）。講稿、來源列及未繪製欄位不代替主視覺佐證。換行警告列出原始欄位路徑、估算行數與上限；估算沿用字寬並接受 LF／CRLF／CR，實際字型、英文整詞換行與不均勻斷行仍需預覽。
 
 數字支援正負號、小數、科學記號、千分位、全形，以及百分比寫法（例如 `32%`、`32 %`、`百分之32`、`0.32`）。來源寫 `32%` 時，visual 可保留 `32` 百分數或 `0.32` 比例；選哪種仍須配合圖表實際使用的單位。沒有可核對數字的稿不得放量化圖表；純文字 table 可用。根層 `title`／`date` 的數字須直接在原稿找得到，不採用某一頁的算式；原稿沒日期就省略 `date`。
 
@@ -34,3 +34,16 @@ check 只比對阿拉伯數字。中文數詞（例如「九百」「三成」�
 漏斗的轉換率、百分比堆疊的比例若由圖表依原始值自動產生，不必另寫算式；圖表自動產生的差額、刻度與中位數也不要求逐字出現在原稿。若把比例填進 `claim`、`note`、`metric.value` 等畫面文字，就必須在 `notes` 用文字交代分子、分母與算法，例如「轉換率以完成確認人數除以送出人數」。這項說明供人工核對，check 不會驗算除法，也不會因此准許新比例：原稿沒有該比例、且它不是同頁合法加減算式的結果，仍會失敗。不要把除法寫成「計算：」或「算法：」格式，否則會回報不支援。
 
 成功回傳碼為 `0`；輸入或驗證失敗為 `1`；缺指令參數為 `2`。警告仍可成功，需看圖判斷。自動通過的界線是「上述掃描欄位的阿拉伯數字在原稿找得到，或是同頁合法加減算式的結果，而且可建檔」，不是完整的事實查核：相同數字用錯指標、把日期當成量測值、claim 是否真是一句判斷、畫面文字與數據的語意關係、百分比分母、來源列內容及實際版面都要人工驗收。check 不核對數字屬於哪個指標，也不驗證來源真偽或中文數詞的語意。SVG 圖表預覽不能代替 PowerPoint 逐頁預覽。
+
+
+## 報告數字驗收
+
+```sh
+node evals/check-report.mjs out/report.html script.md out/report.json
+```
+
+第三個參數是生成該 HTML 的報告規格，外部圖表路徑相對於此 `report.json`。先依原稿核對各圖表輸入的數字，再用同一圖表模型及文件類別順序重建 SVG，逐圖核對完整 SVG 與元素位置；只有完全吻合的區域可使用模型產生的比例、轉換率、差額、中位數及顯示精度。正文、摘要、標題、圖說與其他圖表不會取得該圖的衍生數字許可。缺檔、錯 JSON、圖表數量、位置或 SVG 不符都會失敗並指出原因。
+
+生成與驗收使用相同設計層；修改圖表、設計層或元件排列後，先重新生成 HTML。這個入口核對產生器的完整 SVG，手改 SVG 的標籤、形狀或屬性也會被拒絕（LF／CRLF 換行相容）。圖表原始資料的控制欄位 `digits` 與數字 `focus` 沿用簡報規則，不當成量測值。
+
+省略第三個參數仍使用既有嚴格路徑：`node evals/check-report.mjs out/report.html script.md`。此路徑不啟用新的衍生標籤放行，仍核對可見 SVG 文字，保留既有刻度與自動圖表編號處理。自動通過不等於數字的指標、單位、期間、分母或來源已經人工確認，也不代表瀏覽器排版、PowerPoint 原生編輯或讀者理解已驗收。

@@ -7,9 +7,10 @@
 ## 可以做什麼
 
 - **PowerPoint 簡報**：可重用的版型、來源列與講稿；8 類原生圖表可在 PowerPoint 編輯數據，其餘圖種以 SVG 搭配 PNG 後備呈現。
-- **HTML 報告**：以報告元件組成可閱讀、轉寄與列印的文件。
+- **閱讀型簡報**：會前寄出、沒有人講解時，在 `story.json` 填 `"mode": "read"`，改用較小字級、雙格與註腳，要說的話寫在頁面上。
+- **HTML 報告與 PDF**：從 `report.json` 產生可閱讀、轉寄的 HTML，再用 Chrome、Edge 等瀏覽器印成 A4／Letter PDF 並逐頁檢查。
 - **SVG／PNG 圖表**：23 種圖表與 1 種表格，包含長條、折線、瀑布、散佈、熱圖等。
-- **既有檔案改版**：提供 Office／HTML 內容擷取與修改指引；實際修改由 agent 依來源檔執行，並非一鍵轉換所有 Office 格式。
+- **既有檔案改版**：在副本上替既有 PowerPoint、Word、Excel、HTML 的指定圖表或圖片換樣式；實際修改由 agent 依來源檔執行，並非一鍵轉換所有 Office 格式。
 - **自訂外觀**：調整色彩、字型與版面設定，保留數據與意義。
 
 ## 安裝 skill
@@ -46,9 +47,10 @@ node evals/check.mjs examples/story.json evals/fixtures/example-script.md
 node scripts/pptx.js examples/story.json out/deck.pptx
 node scripts/svg.js examples/rank.json out/rank.svg
 node scripts/png.js out/rank.svg out/rank.png
+node scripts/report.js examples/report.json out/report.html
 ```
 
-開啟 `out/deck.pptx` 查看簡報；以瀏覽器開啟 `examples/report.html` 查看完整 HTML 報告。範例及驗收稿為虛構示意資料，不代表真實公司或機構。
+開啟 `out/deck.pptx` 查看簡報；以瀏覽器開啟 `out/report.html` 查看完整 HTML 報告。閱讀型簡報範例見 `examples/story-read.json`。範例及驗收稿為虛構示意資料，不代表真實公司或機構。
 
 ## 預覽與限制
 
@@ -66,7 +68,15 @@ node scripts/preview.js out/deck.pptx out/preview
 - Poppler 的 `pdftoppm` 與 FFmpeg，兩者須在 PATH 中。
 - Windows 版 PowerPoint 不由預覽腳本直接控制；可手動開檔，或使用 LibreOffice 預覽。
 
-字型不隨 repo 或 PPTX 附送。預設一般文字使用微軟正黑體，展示標題使用 Cambria／PMingLiU；不同電腦可能採替代字型，造成換行差異。自動驗證通過不代表版面、來源真偽與完整語意都已驗收。原生圖表改值後，也不會自動改寫頁面結論或重選重點；詳見[編輯限制](docs/design-diff.md)。
+報告印 PDF：
+
+```sh
+node scripts/pdf.js out/report.html out/print
+```
+
+需要 Chrome、Edge、Chromium 或 Brave（可用 `BLUEPRINT_CHROME` 指定執行檔），以及 Poppler 的 `pdftoppm`、`pdftotext` 與 FFmpeg。
+
+字型不隨 repo 或 PPTX 附送。預設一般文字使用微軟正黑體，展示標題使用 Cambria／PMingLiU；不同電腦可能採替代字型，造成換行差異。自動驗證通過不代表版面、來源真偽與完整語意都已驗收。原生圖表改值後，也不會自動改寫頁面結論或重選重點；詳見[編輯限制](docs/design-diff.md)。中文數詞與日期區間不自動核對；數字檢查只確認畫面數字出自原稿，不確認原稿本身正確。
 
 ## 文件
 
@@ -77,7 +87,7 @@ node scripts/preview.js out/deck.pptx out/preview
 | [圖表選單](references/charts.md) | 圖種選擇與 JSON 欄位 |
 | [HTML 報告](references/report.md) | 報告製作與列印 |
 | [既有檔案](references/formats.md) | Office／HTML 修改範圍與保留原則 |
-| [設計設定](design/README.md) | 預設全球藍與可選配色 |
+| [設計設定](design/README.md) | 預設全球藍、可選配色與全交付字級索引 |
 | [自訂方法](docs/make-it-yours.md) | 改配色、字型、版型與流程 |
 | [驗收說明](evals/README.md) | 自動檢查的能力與限制 |
 
@@ -90,7 +100,7 @@ npm ci
 npm test
 node scripts/check-design.js
 node evals/check.mjs examples/story.json evals/fixtures/example-script.md
-node evals/check-report.mjs examples/report.html evals/fixtures/explain-script.md
+node evals/check-report.mjs examples/report.html evals/fixtures/explain-script.md examples/report.json
 ```
 
 CI 在 Windows、macOS 與 Linux 執行上述檢查。測試產生的檔案及自己的工作成果請放在 `out/`；不要提交客戶資料、憑證或私人文件。

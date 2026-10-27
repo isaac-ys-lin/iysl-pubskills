@@ -9,6 +9,11 @@
     "evidenceTwoLineTitle": { "width": 1144, "height": 599 },
     "evidenceNoNote": { "width": 1720, "height": 669 }
   },
+  "screen": { "type": { "body": 16, "small": 12, "sub": 18, "title": 28, "display": 52 } },
+  "print": {
+    "margin": { "top": 12, "right": 14, "bottom": 15, "left": 22, "indent": 28, "gutter": 11 },
+    "type": { "body": 11, "leading": 16, "heading": 24, "sub": 12, "small": 9, "cover": 30, "summary": 16 }
+  },
   "font": {
     "latin": ["Helvetica Neue", "Segoe UI", "Arial"],
     "cjk": ["PingFang TC", "Microsoft JhengHei"], "slide": "Microsoft JhengHei",
@@ -22,10 +27,11 @@
     "conclusionNumber": { "px": 88, "weight": 300, "color": "#125A98" },
     "title": { "px": 56, "weight": 600, "color": "#00315A" },
     "sub": { "px": 36, "weight": 400 },
-    "body": { "px": 32, "weight": 400, "color": "#111111" },
+    "body": { "px": 40, "weight": 400, "color": "#111111" },
     "chartTitle": { "px": 32, "weight": 600, "color": "#00315A" },
     "tableBody": { "px": 32, "weight": 400, "emphasisWeight": 600, "color": "#111111" },
     "tableHeader": { "px": 24, "weight": 400, "color": "#4A4A4A" },
+    "chart": { "px": 32, "weight": 400, "color": "#5E5D59" },
     "label": { "px": 24, "weight": 400, "color": "#4A4A4A" },
     "minimum": 24
   },

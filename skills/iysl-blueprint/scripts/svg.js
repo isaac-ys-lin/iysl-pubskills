@@ -5,8 +5,9 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { T, C, FONT_FAMILY, prepare, formatValue, tickText, textWidth } from './core.js';
 import { isMain } from './main.js';
 
-const PX = T.type.label.px; // 24, the smallest text anywhere
-const LINE = Math.round(PX * 1.45);
+// Drawing is synchronous, as is the BOXES collector below. Restore sizes after each render.
+let PX = (T.type.chart ?? T.type.label).px;
+let LINE = Math.round(PX * 1.45);
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const n = (v) => Math.round(v * 100) / 100;
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
@@ -21,12 +22,14 @@ const boxOf = (x, y, str, size, anchor) => {
   return { x0, x1: x0 + w, y0: y - size * 0.8, y1: y + size * 0.2, str };
 };
 
-function text(x, y, str, { size = PX, fill = C.textSecondary, weight, anchor, on } = {}) {
+function text(x, y, str, { size = PX, fill = C.textSecondary, weight, anchor, on, tick } = {}) {
   if (BOXES) BOXES.push(boxOf(x, y, str, size, anchor));
   const attrs = [`x="${n(x)}"`, `y="${n(y)}"`, `font-size="${size}"`, `fill="${fill}"`];
   if (weight) attrs.push(`font-weight="${weight}"`);
   if (anchor && anchor !== 'start') attrs.push(`text-anchor="${anchor}"`);
   if (on) attrs.push(`data-on="${on}"`);
+  // Axis scale labels: evals/check-report.mjs skips them, as evals/check.mjs skips axis.ticks.
+  if (tick) attrs.push('data-tick="1"');
   return `<text ${attrs.join(' ')}>${esc(str)}</text>`;
 }
 
@@ -79,7 +82,7 @@ function bottomAxis(axis, sx, y, x0, x1, P, { grid = true, top = 0, suffix = '' 
     const x = sx(t);
     if (grid) P.push(line(x, top, x, y, { stroke: C.grid, width: T.stroke.grid }));
     P.push(line(x, y, x, y + T.stroke.axisTick));
-    P.push(text(x, y + T.stroke.axisTick + LINE * 0.8, tickText(axis, t, suffix), { anchor: 'middle' }));
+    P.push(text(x, y + T.stroke.axisTick + LINE * 0.8, tickText(axis, t, suffix), { anchor: 'middle', tick: true }));
   }
   P.push(line(x0, y, x1, y));
 }
@@ -115,7 +118,7 @@ function yAxis(axis, sy, x0, x1, P, suffix = '') {
   for (const t of axis.ticks) {
     const y = sy(t);
     P.push(line(x0, y, x1, y, { stroke: C.grid, width: T.stroke.grid }));
-    P.push(text(x0 - 12, mid(y), tickText(axis, t, suffix), { anchor: 'end' }));
+    P.push(text(x0 - 12, mid(y), tickText(axis, t, suffix), { anchor: 'end', tick: true }));
   }
 }
 
@@ -216,7 +219,7 @@ DRAW.multiples = (m, W, H) => {
     P.push(text(x1, y1 + LINE * 0.9, m.x.at(-1), { anchor: 'end' }));
   });
   const ticks = m.axis.ticks.map((t) => tickText(m.axis, t)).join('、');
-  P.push(text(0, H - 8, `縱軸各格相同：${ticks}${m.unit ? ` ${m.unit}` : ''}；右上為最後一期的值`, {}));
+  P.push(text(0, H - 8, `縱軸各格相同：${ticks}${m.unit ? ` ${m.unit}` : ''}；右上為最後一期的值`, { tick: true }));
   return P.join('');
 };
 
@@ -362,7 +365,7 @@ DRAW.strip = (m, W, H) => {
 
 DRAW.scatter = (m, W, H, warn) => {
   const P = [];
-  const x0 = yLabelWidth(m.yAxis, m.suffix) + 8, x1 = W - 16, y0 = 16, y1 = H - LINE - 16;
+  const x0 = yLabelWidth(m.yAxis, m.suffix) + 8, x1 = W - Math.max(16, textWidth(tickText(m.xAxis, m.xAxis.hi), PX) / 2), y0 = Math.max(16, PX * 0.8), y1 = H - LINE - 16;
   const sx = scale(m.xAxis.lo, m.xAxis.hi, x0, x1), sy = scale(m.yAxis.lo, m.yAxis.hi, y1, y0);
   yAxis(m.yAxis, sy, x0, x1, P, m.suffix);
   bottomAxis(m.xAxis, sx, y1, x0, x1, P, { grid: false });
@@ -839,8 +842,16 @@ export function render(spec, opts = {}) {
   const model = prepare(spec, opts);
   const width = opts.width ?? T.chartArea.evidence.width;
   const height = opts.height ?? T.chartArea.evidence.height;
-  const body = draw(model, { width, height });
-  return { svg: doc(width, height, body, opts.font), body, model, width, height };
+  const previous = PX;
+  try {
+    PX = opts.chartPx ?? PX;
+    LINE = Math.round(PX * 1.45);
+    const body = draw(model, { width, height });
+    return { svg: doc(width, height, body, opts.font), body, model, width, height };
+  } finally {
+    PX = previous;
+    LINE = Math.round(PX * 1.45);
+  }
 }
 
 // Source row under the chart for standalone output: thin rule with 9 ticks, then source｜unit｜period｜missing.
@@ -874,7 +885,7 @@ export function framed(spec, opts = {}) {
 }
 
 // Keep enough vertical space for document charts whose categories run down the page.
-function reportHeight(model) {
+export function reportHeight(model) {
   const count = {
     rank: model.rows?.length, slope: model.rows?.length, share: model.rows?.length,
     strip: model.groups?.length, dumbbell: model.rows?.length, funnel: model.steps?.length,

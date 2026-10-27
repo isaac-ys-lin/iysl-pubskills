@@ -1,21 +1,38 @@
 ---
 name: iysl-blueprint
-description: Create finished PowerPoint decks with editable charts, HTML reports, and standalone SVG charts using Blueprint's blue-and-gray visual style; also restyle existing PowerPoint, Word, Excel, HTML or SVG while preserving data and meaning. Use for Blueprint／藍圖 presentations and reports, or turning scripts, outlines and meeting notes into these finished deliverables. Exclude software or architecture blueprints, design-system maintenance, outline-only requests, and image-prompt decks.
+description: Create finished PowerPoint decks with editable charts, HTML reports, and standalone SVG charts using Blueprint's blue-and-gray visual style; also restyle specified charts or images in existing PowerPoint, Word, Excel, HTML or SVG while preserving data and meaning. Use for Blueprint／藍圖 presentations and reports, or turning scripts, outlines and meeting notes into these finished deliverables. Exclude software or architecture blueprints, design-system maintenance, outline-only requests, and image-prompt decks.
 metadata:
-  compatibility: PPTX assembly requires Node.js 22 or later and npm (run npm ci once in the skill folder); the SVG chart renderer alone needs only Node.js. LibreOffice or PowerPoint for Mac is optional for page previews.
+  compatibility: PPTX assembly requires Node.js 22 or later and npm (run npm ci once in the skill folder); the SVG chart renderer alone needs only Node.js. LibreOffice or PowerPoint for Mac is optional for page previews; report PDFs need Chrome, Edge, Chromium or Brave.
 ---
 
 # Blueprint
 
-把文字稿整理成簡報或 HTML 報告，也能將既有檔案套用設計層；以原稿和原檔為內容依據。
+把文字稿整理成簡報或 HTML 報告，也能為既有檔案的指定圖表或圖片換樣式；以原稿和原檔為內容依據。
+
+## 先分流
+
+先辨認內容可否重組，再選交付用途。沿用使用者已給的讀者背景、目的與格式；只有缺口會實質改變取捨時，才詢問一次。
+
+- **只換樣式**：沿用原文，依 [既有檔案流程](references/formats.md)在副本上修改指定圖表或圖片，保留原檔、頁序、公式與可編輯內容。Office 擷取僅是可讀內容與快取，不是整份文件的往返重建模型；讀不到與只取得快取的部分須揭露。
+- **內容可重組**：依下列用途選流程，使用者明確指定的格式優先。
+  - 有講者說明：現場簡報（`present`，預設），依下方〈簡報流程〉。
+  - 無講者、需要逐頁比較證據：閱讀型簡報（`read`），依〈簡報流程〉及[閱讀型簡報](references/layouts.md#閱讀型簡報)。
+  - 連續閱讀、轉寄或列印：直接依 [報告流程](references/report.md)製作 HTML／PDF，不必先拆成投影片。
+
+所有交付先依[全交付字級索引](design/README.md#全交付字級索引)選用途、單位與預設來源；既有檔案只套用授權指定目標。
 
 ## 原則
 
 1. 觀點在前，證據在後。
 2. 一頁一個清楚的判斷：標題 `claim` 寫結論，主題放頁首小字 `kicker`。
 3. 先寫結論，再選最能支持它的圖或版型。
-4. 放不下就刪內容或拆頁，不縮字級。
+4. 放不下先修版型、合理重排或拆頁，保留原稿數字與限制，不逐頁縮字級；閱讀型簡報整份採閱讀預設。
 5. `claim` 點名的數字與項目要在當頁可見，強調項目要與主張一致。
+6. 依讀者的先備知識安排解釋，簡報與報告都適用；只換樣式時沿用原文。
+   - 讀者不熟主題：以白話說清結論，用熟悉的情境或具體例子說明用途與運作；必要術語在首次出現時就地解釋，每頁／節回答一個主要問題。讀者熟悉主題：直接聚焦證據與取捨。
+   - 比喻有助理解才用，角色對應須一致；自行設計的例子標為「示意情境」，比喻須明示（如「可以想成……」），可放正文但不作事實證據、不補造數字或因果。
+   - 影響判斷的限制放同頁／節正文。
+   - 交付前檢查：依已知背景與文中解釋，讀者能否說明結論及其理由；斷點補在首次需要理解之處。
 
 每個版型自帶一個主張；稿子撐不起就換版型，未決事項用無 `tag`／`focus` 的 `list` 或 `columns`。各版型的主張、欄位與容量見 [版型說明](references/layouts.md)。
 
@@ -24,6 +41,8 @@ metadata:
 - 決策型：封面 → 主管摘要 → 現況／需求 → 證據 → 診斷或方案 → 決議事項；無數字時，封面後以帶 `focus` 的 `statement` 開場。每張證據頁都要被摘要或決議採用，孤立頁刪去。
 - 說明型：封面 → 重點摘要 → 拆解 → 流程或時程 → 下一步。
 
+簡報要會前寄出、讀者自己看而沒有人講解時，在 `story.json` 根層填 `"mode": "read"`，做成閱讀型簡報：字級較小（標題 22 pt 可寫兩行、正文 12 pt），每個內容頁以 600–900 字元作密度參考，不是必須填滿的配額；證據頁右欄寫 `takeaway` 與 `points`，可用 `panels` 並排兩格、用 `footnotes` 加註腳。要說的話寫在頁面上，不寫在 `notes`。規則見[閱讀型簡報](references/layouts.md#閱讀型簡報)。
+
 ## 資料底線
 
 - 不編造數字；沒有可畫的數字就不放圖表。無日期的流程用 `process`，不捏造月份。
@@ -31,29 +50,34 @@ metadata:
 - 0 是觀察值。論證需要、讀者會以為有的數字若未給，在原位標「未提供」，並列入當頁來源列；只是版面有那一格而稿子沒提，就整格省略。缺值輸入與各圖處理方式見 [版型說明](references/layouts.md)和[圖表選單](references/charts.md)。
 - 每頁填 `sources.source`；單位、期間只填已知內容。虛構稿註明「虛構示意資料」。推導值的算法與原始數字放當頁 `notes`；需要觀眾看見時寫 `sources.more`。`sources.more` 會上投影片，`notes` 不會；格式見 [驗收說明](evals/README.md)。
 
-## 流程
+## 簡報流程
 
-以下指令從 skill 根目錄執行；需要 Node 22 以上，缺少 `node_modules` 時執行 `npm ci`。先建立 `out/`，輸出統一放在此處；`script.md` 換成本次原稿。
+以下指令從 skill 根目錄執行；需要 Node 22 以上，缺少 `node_modules` 時執行 `npm ci`。先建立 `out/`，輸出統一放在此處；`script.md` 換成本次原稿。此流程適用於內容可重組的簡報；只換樣式走既有檔案流程。
 
-1. 讀文字稿，確認聽眾、目的、可用數字、來源與資料缺口。使用者說明的背景優先；聽眾或目的不明且會改變取捨時，先問一次。
+1. 讀文字稿，確認聽眾及其先備知識、目的、可用數字、來源與資料缺口，依原則 6 決定解釋深度。使用者說明的背景優先；聽眾或目的不明且會改變取捨時，先問一次。
 2. 選合適的骨架，寫故事線和每頁一句結論。
 3. 依 [版型說明](references/layouts.md)挑支撐結論的版型；需要圖表時依 [圖表選單](references/charts.md)選圖。
-4. 寫 `out/story.json`，每張內容頁在 `notes` 放 1～3 句講稿（要說的話、資料限制），計算另列。執行 `node evals/check.mjs out/story.json script.md` 核對；範例：`node evals/check.mjs examples/story.json evals/fixtures/example-script.md`。
+4. 寫 `out/story.json`，每張內容頁在 `notes` 放 1～3 句講稿（要說的話、補充細節），計算另列；影響判斷的限制依原則 6 放在頁面上；閱讀型簡報改把講稿寫在頁面上。執行 `node evals/check.mjs out/story.json script.md` 核對；範例：`node evals/check.mjs examples/story.json evals/fixtures/example-script.md`。
 5. 執行 `node scripts/pptx.js out/story.json out/deck.pptx` 建檔。
 6. 依 [預覽與交付](references/layouts.md#預覽與交付)執行 `node scripts/preview.js out/deck.pptx out/preview`；輸出 `page-N.png`、`sheet.png`（整份概覽）、`deck.pdf`。0 項容量警告只代表未偵測到溢出，仍逐頁找孤字與不均勻換行。
-7. 依警告和預覽修正最弱的一頁，再重建、重驗。能派 subagent 時，可請不同 subagent 對照原稿與需求，分別檢查數字、版面和敘事，再整合修正。交付集中列：核心判斷、缺資料／未完成頁、最弱頁修改前後及原因、哪些圖為原生可編輯／SVG，以及「實際在 PowerPoint 改一個原生圖數值：完成／未驗」。編輯限制見 [設計差異](docs/design-diff.md)。
+7. 依警告和預覽修正最弱的一頁，再重建、重驗。能派 subagent 時，可請不同 subagent 對照原稿與需求，分別檢查數字、版面和敘事，再整合修正。交付集中列：核心判斷、缺資料／未完成頁、最弱頁修改前後及原因、哪些圖為原生可編輯／SVG，再依〈交付證據〉分列四層結果。編輯限制見 [設計差異](docs/design-diff.md)。
+
+## 交付證據
+
+簡報、報告與既有檔案都分列四層結果，寫明完成、未驗或受阻及其依據：
+
+1. **程式核對**：生成、原稿數字對照、容量與警告；通過不代表完整事實查核或實際可讀。
+2. **實際預覽**：列出軟體、觀看條件與已查看的頁面；檢查遮擋、換行、來源及同頁／同節限制。現場版記錄顯示尺寸與觀看距離，閱讀版檢查 A4 縮印，HTML 檢查窄螢幕，PDF 檢查圖說與來源小字。未實測的項目標未驗。
+3. **PowerPoint 原生圖表編輯**：實際開檔改一個原生圖數值才算完成；SVG、XML 或預覽不證明能編輯。不適用的產物註明不適用。
+4. **讀者理解**：記錄目標讀者能否說明結論、理由與重要限制；沒有目標讀者回饋時，只回報內容檢視及尚未驗證理解。
+
+外部程式不可用時保留已完成產物，列明受阻原因與未驗項目。密度警告先查原稿已有的理由、定義或限制是否漏寫，再評估併頁、元件拆分或重排；內容完整且留白有助閱讀時記錄理由，維持既有警告，不以補造或重複內容消除提示。量測差異見[簡報填滿](references/layouts.md#填滿與頁數)及 [PDF 警告](references/report.md#警告)。
 
 ## 設計層與驗證
 
 要改成自己的設計或流程時，讀 [改造步驟](docs/make-it-yours.md)。
 
-預設全球藍設計層：白底封面、深藍章節與襯線展示標題；B′ 深藍及 clay 為選用範例。切換設計層與檢查自訂配色見 [設計層說明](design/README.md)。逐頁檢查判斷、數字、單位、期間、來源、缺值、遮擋與閱讀順序。驗收器通過只證明結構、數字對照和程式可建檔；獨立驗收見 [有數字稿](evals/with-numbers.md)與[無數字稿](evals/without-numbers.md)。
-
-## 文字稿 → 報告
-
-讀者要連續閱讀、轉寄或列印時，依 [報告流程](references/report.md)從元件庫組成 HTML。
-先寫讀者要帶走的一句話與每節判斷；有資料才加圖，圖說交代單位、期間與來源。
-使用 `node scripts/theme-css.js report.html` 套用生效的設計層，再用 `node evals/check-report.mjs report.html script.md` 核對。
+預設全球藍設計層：白底封面、深藍章節與襯線展示標題；B′ 深藍及 clay 為選用範例。切換設計層與檢查自訂配色見 [設計層說明](design/README.md)。逐頁檢查判斷、數字、單位、期間、來源、缺值、遮擋與閱讀順序；也查每張圖比較的是否為同類、可比較的項目，以及同一組數字有沒有在相鄰的段落、圖與表重複。驗收器不判斷這些語意問題。驗收器通過只證明結構、數字對照和程式可建檔；獨立驗收見 [有數字稿](evals/with-numbers.md)與[無數字稿](evals/without-numbers.md)。
 
 ## 套用到既有檔案
 
