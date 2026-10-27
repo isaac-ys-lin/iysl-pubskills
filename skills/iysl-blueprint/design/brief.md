@@ -17,6 +17,6 @@
 
 請逐一說明並設定色彩職務：`color.cover` 白底封面標題、`color.text` 正文、`textSecondary` 次要文字、`title` 標題、`grid` 格線、`gray` 非重點、`focus` 單一重點、`ordered` 有序深淺、`categorical` 無序類別、`other` 併入其他、`better` 改善、`worse` 惡化、`unchanged` 不變、`dark` 深底、`onDark` 深底字與一般淺底、`tint` 淡底；同步更新 `textOnFill` 的字色對照，以及 `type`、`fill` 內對應的色碼。`font` 的字型陣列（SVG／報告用）與 `font.slide`（PowerPoint 一般文字，預設微軟正黑體）及選用 `font.display`（展示字型序列；全球藍為 Cambria、PMingLiU、Songti TC）、`type` 的字級與字重、`stroke` 的線寬也要依需求調整。不要把正負號當成好壞的替代訊號。
 
-全球藍以 `type.display.px: 96`、`type.section.px: 78` 定義封面 48 pt、章節 39 pt；其餘字級沿用現有引擎。有 `color.cover` 時為白封面／深藍章節；未設定的自訂層保持既有版型。改字型需確認收件端字型與替代字型的換行。
+全球藍以 `type.display.px: 104` 定義封面與章節 52 pt，與 clay／blue 一致；自訂層可加 `type.section.px` 讓章節較小（以封面字級為上限）；其餘字級沿用現有引擎。有 `color.cover` 時為白封面／深藍章節；未設定的自訂層保持既有版型。改字型需確認收件端字型與替代字型的換行。
 
 拿到後先跑 `node scripts/check-design.js 你的檔`，修正失敗並評估警告，再看實際成品。

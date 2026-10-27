@@ -4,7 +4,7 @@
 
 ## 預設外觀
 
-預設使用白底封面（#000066 標題）與深藍章節（#142979、白字）；展示標題用 Cambria／PMingLiU，HTML 後備 Songti TC。封面 48 pt、章節 39 pt。程式測試無法代替收件端 PowerPoint、Office Web 與實際字型環境的視覺驗收。
+預設使用白底封面（#000066 標題）與深藍章節（#142979、白字）；展示標題用 Cambria／PMingLiU，HTML 後備 Songti TC。封面與章節標題 52 pt。程式測試無法代替收件端 PowerPoint、Office Web 與實際字型環境的視覺驗收。
 
 ## 輸出差異
 
