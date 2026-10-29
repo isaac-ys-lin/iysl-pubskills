@@ -81,7 +81,7 @@ function powerPointPdf(deck, outPdf) {
 // a copy in the temp folder. It quits only when no other deck is open, leaving the user's own PowerPoint session alone.
 function windowsPowerPointPdf(powershell, deck, outPdf) {
   // shortcut: assumes the temp folder path is short; point TEMP at a short folder if Open still reports the 255 limit.
-  const stem = join(tmpdir(), `iysl-blueprint-preview-${process.pid}-${Date.now()}`);
+  const stem = join(tmpdir(), `${PACKAGE}-preview-${process.pid}-${Date.now()}`);
   const inTemp = `${stem}.pptx`, pdf = `${stem}.pdf`;
   copyFileSync(deck, inTemp);
   try {
@@ -93,12 +93,12 @@ function windowsPowerPointPdf(powershell, deck, outPdf) {
       $app = New-Object -ComObject PowerPoint.Application
       $p = $null
       try {
-        $p = $app.Presentations.Open($env:BLUEPRINT_PPTX, -1, 0, 0)
-        $p.SaveAs($env:BLUEPRINT_PDF, 32)
+        $p = $app.Presentations.Open($env:PREVIEW_PPTX, -1, 0, 0)
+        $p.SaveAs($env:PREVIEW_PDF, 32)
       } finally {
         if ($p) { $p.Close() }
         if ($app.Presentations.Count -eq 0) { $app.Quit() }
-      }`], { timeout: 180000, stdio: ['ignore', 'ignore', 'pipe'], env: { ...process.env, BLUEPRINT_PPTX: inTemp, BLUEPRINT_PDF: pdf } });
+      }`], { timeout: 180000, stdio: ['ignore', 'ignore', 'pipe'], env: { ...process.env, PREVIEW_PPTX: inTemp, PREVIEW_PDF: pdf } });
     if (!existsSync(pdf)) throw new Error('PowerPoint 未產生 PDF');
     copyFileSync(pdf, outPdf);
   } finally {
