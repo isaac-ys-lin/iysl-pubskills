@@ -64,9 +64,8 @@ node scripts/preview.js out/deck.pptx out/preview
 
 這一步另外需要：
 
-- LibreOffice；macOS 也可使用已安裝的 Microsoft PowerPoint。
+- 已安裝的 Microsoft PowerPoint（macOS 或 Windows；Windows 經 PowerShell 自動化），或 LibreOffice。PowerPoint 自動化失敗時改用 LibreOffice。
 - Poppler 的 `pdftoppm` 與 FFmpeg，兩者須在 PATH 中。
-- Windows 版 PowerPoint 不由預覽腳本直接控制；可手動開檔，或使用 LibreOffice 預覽。
 
 報告印 PDF：
 
