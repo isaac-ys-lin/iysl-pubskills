@@ -281,6 +281,8 @@ function nativeChart(slide, m, area, ctx) {
     }
     if (m.refs.length) ctx.warn(`第 ${ctx.n} 頁圖表：原生散佈圖省略參考線；若要保留，請設定 native: false`);
   }
+  // PowerPoint skips category labels it judges crowded, even when they fit; every bar needs its name.
+  if (type === 'bar') opts.catAxisLabelFrequency = 1;
   slide.addChart(type, data, opts);
   ctx.charts.push(m);
 }
@@ -811,8 +813,10 @@ LAYOUT.list = (slide, ctx) => {
   const top = contentTop(slide, ctx), end = sourceRow(slide, ctx) - M.sourceGap;
   const items = page.visual.items.map((item, index) => ({ ...item, index })).filter((item) => !emptyCell(page.visual.items[item.index]));
   if (outside(items.length, CAP.list)) ctx.warn(`第 ${ctx.n} 頁診斷清單是 ${items.length} 項，規格是 ${CAP.list.join('～')} 項`);
+  // Without any tag the tag column is dropped, so headings start at the margin instead of looking indented.
   const rowH = (end - top) / items.length, tagW = 200, noteW = 400, gap = 48;
-  const midX = M.x + tagW + gap, midW = INNER - tagW - noteW - 2 * gap;
+  const lead = items.some((item) => item.tag) ? tagW + gap : 0;
+  const midX = M.x + lead, midW = INNER - lead - noteW - gap;
   // Rows stretch to the page; fill counts each item at its own height: heading, body, 12 px above and below.
   sparse(ctx, items.reduce((sum, item) => sum + Math.max(24 + lines(item.heading, T.type.sub.px, midW) * T.type.sub.px * 1.2
     + (item.body ? 8 + Math.min(lines(item.body, T.type.body.px, midW), CAP.listBody) * T.type.body.px * 1.4 : 0),

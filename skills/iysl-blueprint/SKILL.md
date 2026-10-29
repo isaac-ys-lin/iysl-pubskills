@@ -2,7 +2,7 @@
 name: iysl-blueprint
 description: Create finished PowerPoint decks with editable charts, HTML reports, and standalone SVG charts using Blueprint's blue-and-gray visual style; also restyle specified charts or images in existing PowerPoint, Word, Excel, HTML or SVG while preserving data and meaning. Use for Blueprint／藍圖 presentations and reports, or turning scripts, outlines and meeting notes into these finished deliverables. Exclude software or architecture blueprints, design-system maintenance, outline-only requests, and image-prompt decks.
 metadata:
-  compatibility: PPTX assembly requires Node.js 22 or later and npm (run npm ci once in the skill folder); the SVG chart renderer alone needs only Node.js. LibreOffice or PowerPoint for Mac is optional for page previews; report PDFs need Chrome, Edge, Chromium or Brave.
+  compatibility: PPTX assembly requires Node.js 22 or later and npm (run npm ci once in the skill folder); the SVG chart renderer alone needs only Node.js. LibreOffice or PowerPoint (Mac or Windows) is optional for page previews; report PDFs need Chrome, Edge, Chromium or Brave.
 ---
 
 # Blueprint
