@@ -50,10 +50,10 @@ for (const name of ['tokens.json', 'tokens.blue.json']) {
     const base = await outputs(dir, tokens);
     const readBase = await outputs(dir, tokens, 'read');
     assert.match(base.slide, /sz="2000"/);
-    assert.match(readBase.slide, /sz="1200"/);
+    assert.match(readBase.slide, /sz="1400"/);
     assert.match(base.html, /--cp-body: 16px;/);
-    assert.match(base.html, /--cp-small: 12px;/);
-    assert.match(base.html, /--cp-print-small: 9pt;/);
+    assert.match(base.html, /--cp-small: 14px;/);
+    assert.match(base.html, /--cp-print-small: 10pt;/);
     const present = structuredClone(tokens);
     present.type.body.px = 44;
     present.type.sub.px = 42;
@@ -79,7 +79,7 @@ for (const name of ['tokens.json', 'tokens.blue.json']) {
     const printChanged = await outputs(dir, print);
     assert.match(printChanged.print, /--cp-print-small: 8\.5pt;/);
     assert.match(printChanged.print, /font: 8\.5pt var\(--cp-font\)/);
-    assert.match(printChanged.print, /--cp-print-body: 11pt;/);
+    assert.match(printChanged.print, /--cp-print-body: 12pt;/);
     assert.equal(printChanged.screen, base.screen);
     assert.equal(printChanged.slide, base.slide);
     assert.equal((await outputs(dir, print, 'read')).slide, readChanged.slide);
@@ -102,7 +102,7 @@ for (const name of ['tokens.json', 'tokens.blue.json']) {
       assert.ok(out.html.includes(`--cp-${key}: ${value}px;`), key);
     }
     assert.match(out.slide, /sz="1900"/);
-    assert.match(out.print, /--cp-print-small: 9pt;/);
+    assert.match(out.print, /--cp-print-small: 10pt;/);
   });
 
   test(`${name}: explicit screen sizes control complete HTML without changing PPTX or print`, async (t) => {
@@ -139,8 +139,8 @@ for (const name of ['tokens.json', 'tokens.blue.json']) {
       const svg = await zip.file(svgs[0]).async('string');
       assert.deepEqual([...new Set([...svg.matchAll(/font-size="(\d+)"/g)].map((m) => Number(m[1])))], [expected * 2]);
       if (mode === 'read') {
-        assert.match(await zip.file('ppt/slides/slide1.xml').async('string'), /sz="900"/);
-        assert.match(await zip.file('ppt/slides/slide3.xml').async('string'), /sz="1000"/);
+        assert.match(await zip.file('ppt/slides/slide1.xml').async('string'), /sz="1000"/);
+        assert.match(await zip.file('ppt/slides/slide3.xml').async('string'), /sz="1200"/);
       }
     };
     const base = await outputs(dir, tokens);
@@ -148,7 +148,7 @@ for (const name of ['tokens.json', 'tokens.blue.json']) {
     assert.match(base.print, /\[data-tick\] \{ font-size: 24px;/);
     assert.match(base.print, /th, td \{ font-size: var\(--cp-print-body\);/);
     await sizes('present', 16);
-    await sizes('read', 10);
+    await sizes('read', 12);
     tokens.type.chart.px = 36;
     const custom = await outputs(dir, tokens);
     assert.equal(custom.html, base.html);
@@ -158,7 +158,7 @@ for (const name of ['tokens.json', 'tokens.blue.json']) {
     await sizes('present', 12);
     delete tokens.print;
     const fallback = await outputs(dir, tokens);
-    assert.match(fallback.print, /--cp-print-body: 11pt;/);
-    assert.match(fallback.print, /--cp-print-small: 9pt;/);
+    assert.match(fallback.print, /--cp-print-body: 12pt;/);
+    assert.match(fallback.print, /--cp-print-small: 10pt;/);
   });
 }

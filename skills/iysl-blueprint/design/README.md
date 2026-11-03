@@ -6,7 +6,7 @@ Blueprint 的視覺規格。預設使用全球藍，B′ 深藍與 clay 保留�
 - `tokens.blue.json`：B′ 深藍設計層範例，並非原全球藍。
 - `tokens.clay.json`：clay 配色範例，不是預設。
 - `read.json`：閱讀版（`mode: "read"`）疊在設計層上的覆寫：字級、上下邊界（含標題到 `lede` 的 `ledeGap`、columns 正文到 `takeaway` 的 `takeawayGap`，各至少一個正文行高）、證據圖寬與容量（含填滿門檻 `minFill`、points 點數、panels 註行數）。現場與閱讀版都以精確行距（pt）排字，PowerPoint 的行高與版型估算一致；行高實值見 [spec.md](spec.md)。
-- 設計層可選的 `screen.type` 區塊：HTML 的 CSS px 字級，`body`、`small`、`sub`、`title`、`display` 分別控制正文、小字、小標題、節標題與封面標題。內建全球藍、clay／blue 都明填 16／12／18／28／52 px，與簡報 `type`、閱讀版 `read.json`、列印 `print.type` 分開。舊自訂設計層未填的欄位，維持原本對應簡報字級除以 2 的換算（`small` 對應 `type.label.px`）；填齊即可獨立控制。報告 SVG 圖表採獨立預設，見下方全交付索引。
+- 設計層可選的 `screen.type` 區塊：HTML 的 CSS px 字級，`body`、`small`、`sub`、`title`、`display` 分別控制正文、小字、小標題、節標題與封面標題。內建全球藍、clay／blue 都明填 16／14／18／28／52 px，與簡報 `type`、閱讀版 `read.json`、列印 `print.type` 分開。舊自訂設計層未填的欄位，維持原本對應簡報字級除以 2 的換算（`small` 對應 `type.label.px`）；填齊即可獨立控制。報告 SVG 圖表採獨立預設，見下方全交付索引。
 - 設計層的 `print` 區塊：報告列印的邊界（mm；`indent`、`gutter` 是 22／14 mm 線內側的正文內距）與字級（pt），由 `scripts/theme-css.js` 輸出成 `--cp-print-*` 變數；缺少時用預設值。
 - `spec.md`：頁面格線、字級、線寬、刻度、來源列、標註規則、資料顯示、版型與 PowerPoint 輸出對應；色碼描述預設全球藍。
 
@@ -17,9 +17,9 @@ Blueprint 的視覺規格。預設使用全球藍，B′ 深藍與 clay 保留�
 | 交付／用途 | 預設與單位 | preset 來源與套用方式 |
 | --- | --- | --- |
 | PPTX 現場 `present` | 正文 20 pt；圖表軸標／資料標籤／圖例 16 pt；頁標題 28、封面與章節 52、副標 18、表格正文 16、表頭 12、一般標籤與來源／頁碼 12 pt | 自動生成：生效設計層的 `type`；設計 px ÷ 2 = PPTX pt。圖表與一般標籤／來源分開，原生與 SVG 圖表均採圖表預設。 |
-| PPTX 閱讀 `read` | 正文 12 pt；圖表及表格 10 pt；來源／註腳／頁碼 9 pt；頁標題 22、封面 36、副標 14、一般標籤 10 pt | 自動生成：`read.json` 疊在當前設計層上，字級以設計 px 儲存，同樣除以 2。 |
-| 螢幕 HTML | 正文 16、小字／來源 12、副標 18、節標題 28、封面 32–52 CSS px；圖表標籤 24 viewBox units | 自動生成：設計層 `screen.type`、報告圖表獨立預設與響應式 CSS。SVG 數字是內部座標單位，實際字級隨容器／viewBox 比例變動；不隨 present 圖表字級放大。 |
-| HTML → print／PDF | 正文 11 pt、行距 16 pt；來源／圖說／小字 9 pt；節標題 24、副標／圖表標題 12、封面 30、摘要建議句 16 pt；圖表標籤與刻度均 24 viewBox units | 自動生成：設計層 `print.type`、`scripts/theme-css.js` 與報告 SVG 預設。A4 標準圖寬 146 mm、viewBox 寬約 980 時，24 units 約 10 pt；寬圖或其他尺寸另算。正文、表頭與小字使用列印 pt，不沿用螢幕 CSS px。 |
+| PPTX 閱讀 `read` | 正文 14 pt；圖表及表格 12 pt；來源／註腳／頁碼 10 pt；頁標題 22、封面 36、副標 16、一般標籤 12 pt | 自動生成：`read.json` 疊在當前設計層上，字級以設計 px 儲存，同樣除以 2。 |
+| 螢幕 HTML | 正文 16、小字／來源 14、副標 18、節標題 28、封面 32–52 CSS px；圖表標籤 24 viewBox units | 自動生成：設計層 `screen.type`、報告圖表獨立預設與響應式 CSS。SVG 數字是內部座標單位，實際字級隨容器／viewBox 比例變動；不隨 present 圖表字級放大。 |
+| HTML → print／PDF | 正文 12 pt、行距 18 pt；來源／圖說／小字 10 pt；節標題 24、副標／圖表標題 14、封面 30、摘要建議句 16 pt；圖表標籤與刻度均 24 viewBox units | 自動生成：設計層 `print.type`、`scripts/theme-css.js` 與報告 SVG 預設。A4 標準圖寬 146 mm、viewBox 寬約 980 時，24 units 約 10 pt；寬圖或其他尺寸另算。正文、表頭與小字使用列印 pt，不沿用螢幕 CSS px。 |
 | 既有 PPTX | 依用途選上述 present／read pt 預設 | Agent 在副本上修改授權指定目標，保留內容與原生可編輯性；擷取快取不作全文重建模型。 |
 | 既有 Word | 指定圖表 labels 10 pt、source／caption 9 pt；明確授權文字字級套版且無原模板時：封面 24、H1 16、H2 13、H3／方框標題 11 bold、正文 11、表格 10 pt | Agent 操作預設，沿用原模板優先；僅修改授權指定圖表／圖片或文字範圍，不新增 DOCX 全文生成器。 |
 | 既有 Excel | 指定原生圖表 labels 10 pt、source 9 pt；明確授權工作表字級套版且無原模板時：工作表標題 16、節標題 12、表頭 10 bold、儲存格 10、註記 9 pt | Agent 操作預設；只改授權指定目標，保留公式、資料連結與工作表，不新增 XLSX 生成器。 |
@@ -28,9 +28,9 @@ Blueprint 的視覺規格。預設使用全球藍，B′ 深藍與 clay 保留�
 
 ### 來源與尺寸換算
 
-現場正文／圖表 20／16 pt、閱讀正文／圖表 12／10 pt，採用 [BCG 2018 Format Guide 第 26–27 頁的第三方轉載](https://www.scribd.com/document/895431699/Format-Guide)所載 Key Message／Detail 基線。這不是三家顧問公司的共同現行規範；繁中來源 9 pt、HTML、PDF、Office 與獨立圖檔等其餘數值均為 Blueprint 的媒介設計選擇。
+現場正文／圖表 20／16 pt 採用 [BCG 2018 Format Guide 第 26–27 頁的第三方轉載](https://www.scribd.com/document/895431699/Format-Guide)所載 Key Message／Detail 基線；閱讀版原本也用該基線的 12／10 pt，2026-11 因讀者多在螢幕上看、整頁縮小後太小，改為 14／12 pt，來源 10 pt。這不是三家顧問公司的共同現行規範。A4 報告正文 12 pt、來源與頁尾 10 pt，對齊國發會《政府文書格式參考規範》（105 年 4 月修正）一般資訊 12 點字、頁尾 10 點字，也是臺灣學位論文的常見正文字級，行距 1.5 倍。繁中來源與註腳、HTML、Office 與獨立圖檔等其餘數值均為 Blueprint 的媒介設計選擇。
 
-PPTX pt 是原尺寸的名義字級。縮印後實際 pt = 名義 pt × 實際列印寬度 ÷ 原投影片寬度；13.333 in 投影片配滿 A4 橫式寬 297 mm 約為 0.88 倍，因此 12／10／9 pt 約成 10.5／8.8／7.9 pt，印表機邊界可能再縮小。這與直接生成 A4 報告的 11／9 pt 是不同路徑。
+PPTX pt 是原尺寸的名義字級。縮印後實際 pt = 名義 pt × 實際列印寬度 ÷ 原投影片寬度；13.333 in 投影片配滿 A4 橫式寬 297 mm 約為 0.88 倍，因此閱讀版 14／12／10 pt 約成 12.3／10.6／8.8 pt，印表機邊界可能再縮小。這與直接生成 A4 報告的 12／10 pt 是不同路徑。
 
 SVG 實際 pt = `font-size` viewBox units × 最終寬度（in）× 72 ÷ viewBox 寬度。先決定最終容器尺寸，再重算文字；不能把 SVG／PNG 縮放後仍稱固定 16 pt。預覽檢查換行、遮擋與來源，不用逐頁縮字、刪原稿數字或限制來消除警告；先修版型、合理重排或拆頁。
 
