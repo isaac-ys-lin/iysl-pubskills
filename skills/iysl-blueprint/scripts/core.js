@@ -549,7 +549,9 @@ KINDS.table = (spec, m) => {
   m.rows = spec.rows.map((r, i) => {
     need(Array.isArray(r) && r.length === cols.length, `table 每一列要有 ${cols.length} 格`);
     const emphasis = r[0] === spec.emphasis;
-    return { cells: cells(r, r[0] == null ? `第 ${i + 1} 列` : String(r[0])), emphasis, total: false, fill: emphasis ? C.tint : null, bold: emphasis };
+    const rowCells = cells(r, r[0] == null ? `第 ${i + 1} 列` : String(r[0]));
+    if (emphasis && cols[0].type === 'text') rowCells[0].color = C.focus;
+    return { cells: rowCells, emphasis, total: false, fill: emphasis ? C.tint : null, bold: emphasis };
   });
   if (spec.total) {
     need(Array.isArray(spec.total) && spec.total.length === cols.length, `table 的 total 要有 ${cols.length} 格`);

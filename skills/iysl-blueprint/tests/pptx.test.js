@@ -754,7 +754,8 @@ test('native table maps model cells, emphasis, alignment, text sizes, and total 
       if (r && model.rows[r - 1].fill) assert.ok(nodes(one(cells[c], 'a:tcPr'), 'a:srgbClr').some((p) => p.attrs.val === hex(model.rows[r - 1].fill)));
     }
   }
-  assert.ok(nodes(rows.at(-1), 'a:lnT').some((line) => nodes(line, 'a:solidFill').length));
+  const totalRule = nodes(rows.at(-2), 'a:lnB');
+  assert.ok(totalRule.some((line) => nodes(line, 'a:srgbClr').some((color) => color.attrs.val === hex(C.text))));
 });
 
 test('all eight SVG-only charts have real PNG fallbacks linked by their slide', async () => {

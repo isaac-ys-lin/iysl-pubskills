@@ -18,12 +18,13 @@ export function themeCss(tokens = loadTokens()) {
   --cp-muted: ${c.textSecondary};
   --cp-title: ${c.title};
   --cp-cover: ${c.cover ?? c.title};
+  --cp-cover-paper: ${c.cover ? c.onDark[0] : c.tint};
   --cp-display-font: ${(tokens.font.display ?? [...tokens.font.latin, ...tokens.font.cjk]).map((name) => `"${name}"`).join(', ')}, ${tokens.font.display ? 'serif' : 'sans-serif'};
   --cp-line: ${c.grid};
   --cp-accent: ${c.focus};
-  --cp-table-rule: ${c.tableRule ?? c.text};
+  --cp-table-rule: ${c.tableRule ?? c.focus};
   --cp-tint: ${c.tint};
-  --cp-soft: ${c.onDark[1]};
+  --cp-context: ${c.gray};
   --cp-font: ${font}, sans-serif;
   --cp-body: ${body}px;
   --cp-small: ${screen?.small ?? tokens.type.label.px / 2}px;
@@ -75,7 +76,7 @@ figcaption, .sources, .exhibit-note { margin-top: 10px; color: var(--cp-muted); 
 .chart-data th, .chart-data td { padding: 6px 10px; }
 .chart-data p { margin: 8px 0 0; }
 .chart-focus { fill: var(--cp-accent); stroke: var(--cp-accent); }
-.chart-muted { fill: var(--cp-soft); stroke: var(--cp-soft); }
+.chart-muted { fill: var(--cp-context); stroke: var(--cp-context); }
 .chart-grid { stroke: var(--cp-line); }
 .chart-text { fill: var(--cp-ink); }
 .chart-subtle { fill: var(--cp-muted); }
@@ -83,9 +84,12 @@ figcaption, .sources, .exhibit-note { margin-top: 10px; color: var(--cp-muted); 
 table { width: 100%; border-collapse: collapse; text-align: left; font-variant-numeric: tabular-nums; }
 caption { text-align: left; }
 th, td { padding: 11px 14px; border-bottom: 1px solid var(--cp-line); vertical-align: top; }
-thead th { border-bottom: 2px solid var(--cp-table-rule); font-size: var(--cp-small); }
+thead th { border-bottom: 2px solid var(--cp-table-rule); color: var(--cp-muted); font-size: var(--cp-small); }
 .num, td[data-type="number"], th[data-type="number"] { text-align: right; white-space: nowrap; }
-tr.emphasis, tr.total { font-weight: 700; background: var(--cp-tint); }
+tr.emphasis { font-weight: 700; background: var(--cp-tint); }
+tr.emphasis > th[scope="row"] { color: var(--cp-accent); }
+tbody:has(+ tfoot .total) tr:last-child > * { border-bottom: 0; }
+tr.total > * { border-top: 1px solid var(--cp-ink); }
 .comparison .recommended { background: var(--cp-tint); }
 .diagnosis, .flow { padding-left: 1.4em; }
 .diagnosis li, .flow li { padding: 9px 0; border-bottom: 1px solid var(--cp-line); }
@@ -141,7 +145,7 @@ tr.emphasis, tr.total { font-weight: 700; background: var(--cp-tint); }
   /* Page 1 has no @page margin: the front container cancels the body padding and brings back the 50 / 25 mm column,
      the cover band cancels that again to reach the paper edge. Sections always start on the next page. */
   .report-front { margin: 0 calc(-1 * var(--cp-print-gutter)) 0 calc(-1 * var(--cp-print-indent)); padding: 0 var(--cp-print-text-right) var(--cp-print-bottom) var(--cp-print-text-left); break-after: page; }
-  .report-cover { margin: 0 calc(-1 * var(--cp-print-text-right)) 10mm calc(-1 * var(--cp-print-text-left)); padding: 18mm var(--cp-print-text-right) 12mm var(--cp-print-text-left); background: var(--cp-tint); }
+  .report-cover { margin: 0 calc(-1 * var(--cp-print-text-right)) 10mm calc(-1 * var(--cp-print-text-left)); padding: 18mm var(--cp-print-text-right) 12mm var(--cp-print-text-left); background: var(--cp-cover-paper); }
   .report-cover h1 { font-size: var(--cp-print-cover); line-height: 1.2; }
   /* Source, period and check date stay on one row at the 10 pt print size; a second row pushes the summary off page 1. */
   .cover-meta { gap: 2mm 6mm; }
@@ -157,7 +161,7 @@ tr.emphasis, tr.total { font-weight: 700; background: var(--cp-tint); }
   .toc, .section-heading, .callout { margin-left: calc(-1 * var(--cp-print-indent)); }
   .section-heading { break-inside: avoid; break-after: avoid; margin-bottom: 4mm; border-top: 1.5pt solid var(--cp-accent); padding-top: 4mm; }
   .section-heading .eyebrow { margin-bottom: 1mm; }
-  .section-heading h2 { color: var(--cp-accent); margin-bottom: 3mm; }
+  .section-heading h2 { color: var(--cp-title); margin-bottom: 3mm; }
   .callout { margin-top: 6mm; margin-bottom: 6mm; padding: 0; background: none; border: 0; }
   .callout p { font-size: var(--cp-print-heading); line-height: 1.3; color: var(--cp-accent); font-weight: 400; max-width: none; }
   figure, .callout, .summary, .table-scroll, .comparison, .diagnosis, .flow, .decisions { break-inside: avoid; }

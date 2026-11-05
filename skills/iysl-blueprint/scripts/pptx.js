@@ -195,11 +195,12 @@ function nativeTable(slide, m, area, ctx) {
   const none = { type: 'none', color: hex(C.grid) };
   const border = (color, edge) => [0, 1, 2, 3].map((i) => i === edge ? { color: hex(color), pt: pt(T.stroke.grid) } : none);
   const rows = [m.header.map((h) => ({ text: h.text, options: {
-    align: h.align === 'end' ? 'right' : 'left', color: hex(C.textSecondary), fontSize: pt(head), border: border(C.tableRule ?? C.text, 2),
+    align: h.align === 'end' ? 'right' : 'left', color: hex(C.textSecondary), fontSize: pt(head), border: border(C.tableRule ?? C.focus, 2),
   } })), ...m.rows.map((r, i) => r.cells.map((c, j) => {
     checkWrap(ctx, `visual.rows[${i}][${j}]`, c.text, body, widths[j] - 32, Math.max(0, Math.floor((rowH - 16) / (body * LH))));
+    const next = m.rows[i + 1];
     return { text: c.text, options: { align: c.align === 'end' ? 'right' : 'left', color: hex(c.color), bold: r.bold,
-      fill: hex(r.fill ?? C.onDark[0]), border: border(r.total ? C.text : C.grid, 0) } };
+      fill: hex(r.fill ?? C.onDark[0]), border: next ? border(next.total ? C.text : C.grid, 2) : none } };
   }))];
   slide.addTable(rows, { ...position(area), colW: widths.map(inch), rowH: [headH, ...m.rows.map(() => rowH)].map(inch),
     fontFace: SLIDE_FONT, fontSize: pt(body), color: hex(C.text), margin: [pt(8), pt(12), pt(8), pt(12)],

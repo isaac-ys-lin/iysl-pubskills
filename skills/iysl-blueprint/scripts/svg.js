@@ -104,7 +104,7 @@ DRAW.rank = (m, W, H, warn) => {
     const cy = band * (i + 0.5);
     const xa = sx(Math.min(0, r.value)), xb = sx(Math.max(0, r.value));
     P.push(rect(xa, cy - bh / 2, xb - xa, bh, { fill: r.color }));
-    P.push(text(0, mid(cy), r.label, { fill: C.text }));
+    P.push(text(0, mid(cy), r.label, { fill: r.focus ? C.focus : C.text, weight: r.focus ? 600 : undefined }));
     const right = r.value >= 0;
     P.push(text(right ? xb + 10 : xa - 10, mid(cy), r.text, {
       fill: r.focus ? C.focus : C.text, weight: r.focus ? 600 : undefined, anchor: right ? 'start' : 'end',
@@ -521,13 +521,12 @@ DRAW.table = (m, W, H, warn) => {
   const cellX = (j, align) => (align === 'end' ? xs[j + 1] - 12 : xs[j] + 12);
   const headH = headPx * 1.45 + 16;
   m.header.forEach((h, j) => P.push(text(cellX(j, h.align), headH - 16, h.text, { size: headPx, anchor: h.align })));
-  P.push(line(0, headH, W, headH, { stroke: C.tableRule ?? C.text }));
   const rowH = clamp((H - headH) / m.rows.length, 48, 72 * 1.8);
   if (headH + rowH * m.rows.length > H + 1) warn('表格列數太多，超出圖表區');
   m.rows.forEach((r, i) => {
     const y = headH + rowH * i;
     if (r.fill) P.push(rect(0, y, W, rowH, { fill: r.fill }));
-    P.push(line(0, y, W, y, { stroke: r.total ? C.text : C.grid }));
+    if (i > 0) P.push(line(0, y, W, y, { stroke: r.total ? C.text : C.grid }));
     r.cells.forEach((c, j) => {
       if (!c.text) return;
       P.push(text(cellX(j, c.align), mid(y + rowH / 2, bodyPx), c.text, {
@@ -535,6 +534,7 @@ DRAW.table = (m, W, H, warn) => {
       }));
     });
   });
+  P.push(line(0, headH, W, headH, { stroke: C.tableRule ?? C.focus }));
   return P.join('');
 };
 

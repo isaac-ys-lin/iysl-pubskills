@@ -172,8 +172,12 @@ function table(block, n, where, warnings) {
   for (const w of m.warnings) warnings.push(`${where}：${w}`);
   const cls = (align) => (align === 'end' ? ' class="num"' : '');
   const cell = (c) => (c.value === null ? MISSING : esc(c.text));
-  const row = (r) => `<tr${r.total ? ' class="total"' : r.emphasis ? ' class="emphasis"' : ''}>${r.cells.map((c, i) => (i
-    ? `<td${cls(c.align)}>${cell(c)}</td>` : `<th scope="row"${cls(c.align)}>${cell(c)}</th>`)).join('')}</tr>`;
+  const row = (r) => `<tr${r.total ? ' class="total"' : r.emphasis ? ' class="emphasis"' : ''}>${r.cells.map((c, i) => {
+    const deltaColor = block.columns[i].type === 'delta' && c.value !== null && /^#[0-9a-f]{6}$/i.test(c.color)
+      ? ` style="color:${c.color}"` : '';
+    return i ? `<td${cls(c.align)}${deltaColor}>${cell(c)}</td>`
+      : `<th scope="row"${cls(c.align)}${deltaColor}>${cell(c)}</th>`;
+  }).join('')}</tr>`;
   const body = m.rows.filter((r) => !r.total), total = m.rows.filter((r) => r.total);
   const note = [block.note && `附註：${block.note}`, block.source && `來源：${block.source}`].filter(Boolean).map(esc).join('｜');
   return scroll(block.caption ?? '表格', `<table><caption>${label(`表 ${n}`)}${esc(block.caption ?? '')}</caption>

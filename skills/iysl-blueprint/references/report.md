@@ -60,7 +60,7 @@
 - 預設寬度是正文欄，列印時可伸到離右紙邊 14 mm（A4 寬 146 mm）；`wide: true` 從左 22 mm 線起全寬（A4 寬 174 mm），適合長標籤或多欄。
 - 列印時圖、表、引言、摘要、清單（`list`）、流程（`process`）、比較（`compare`）與追蹤事項表（`close`）都整塊不切頁；表格超過八列才可分頁，並在下一頁重複表頭。
 
-報告與簡報共用目前生效的設計層，預設為全球藍。`scripts/report.js` 產生時同時寫入樣式與圖表顏色；換成 blue 就用 `BLUEPRINT_TOKENS=design/tokens.blue.json node scripts/report.js out/report.json out/report.html` 重建。手工組成的報告用 `node scripts/theme-css.js report.html` 同步樣式，其中由 `scripts/svg.js` 產生的圖也要用同一設計層重產。沒有檔名時，`node scripts/theme-css.js` 會把 CSS 印到終端。
+報告與簡報共用目前生效的設計層，預設為全球藍。`scripts/report.js` 產生時同時寫入樣式與圖表顏色；換成 blue 就用 `BLUEPRINT_TOKENS=design/tokens.blue.json node scripts/report.js out/report.json out/report.html` 重建。手工組成的報告用 `node scripts/theme-css.js report.html` 同步樣式，已有內嵌 SVG 或由產生器加色的增減儲存格時，從 JSON 用同一設計層重產，以更新資料顏色。沒有檔名時，`node scripts/theme-css.js` 會把 CSS 印到終端。
 
 螢幕與列印字級、單位及 preset 來源見[全交付字級索引](../design/README.md#全交付字級索引)。
 

@@ -46,7 +46,7 @@ test('列印：第一頁容器出血並以分頁結束，節不換頁，節標�
   assert.doesNotMatch(css, /\.report-cover \{[^}]*break-after/);
   assert.match(css, /\.toc, \.section-heading, \.callout \{ margin-left: calc\(-1 \* var\(--cp-print-indent\)\);/);
   assert.match(css, /\.section-heading \{[^}]*border-top: [^;]*var\(--cp-accent\)/);
-  assert.match(css, /\.section-heading h2 \{[^}]*color: var\(--cp-accent\)/);
+  assert.match(css, /\.section-heading h2 \{[^}]*color: var\(--cp-title\)/);
   assert.match(css, /\.section-heading \{[^}]*break-inside: avoid; break-after: avoid/);
 });
 
