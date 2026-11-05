@@ -90,7 +90,7 @@ function sourceItems(sources = {}, missing = []) {
 // Thin rule with 9 ticks, then source｜unit｜period on up to two lines, page number on the right.
 // Read-deck footnotes sit just above the rule, numbered (1), (2)…
 // Returns the top of that block (the rule when there are no footnotes) so the layout knows where content must stop.
-function sourceRow(slide, ctx, { line = C.gray, ink = C.textSecondary } = {}) {
+function sourceRow(slide, ctx, { line = C.gray, ink = C.textSecondary, divider = line } = {}) {
   const pageNo = `${ctx.n} / ${ctx.total}`;
   const avail = INNER - textWidth(pageNo, SOURCE) - 40;
   const rows = [[]];
@@ -104,7 +104,7 @@ function sourceRow(slide, ctx, { line = C.gray, ink = C.textSecondary } = {}) {
   if (rows.length > T.sourceRow.maxLines) ctx.warn(`第 ${ctx.n} 頁 sources：來源列需要 ${rows.length} 行，上限 ${T.sourceRow.maxLines} 行`);
   const rowH = SOURCE * LH;
   const ruleY = H - M.bottom - rows.length * rowH - 14 - T.stroke.tickLong;
-  rule(slide, M.x, ruleY, W - M.x, ruleY, line);
+  rule(slide, M.x, ruleY, W - M.x, ruleY, divider);
   for (let i = 0; i <= 8; i++) {
     const tx = M.x + (i * INNER) / 8;
     rule(slide, tx, ruleY, tx, ruleY + (i % 4 === 0 ? T.stroke.tickLong : T.stroke.tickShort), line);
@@ -628,7 +628,7 @@ LAYOUT.evidence = (slide, ctx) => {
   const { page, story } = ctx;
   header(slide, page.kicker, story.title);
   const top = contentTop(slide, ctx);
-  const ruleY = sourceRow(slide, ctx);
+  const ruleY = sourceRow(slide, ctx, { divider: C.grid });
   const end = ruleY - M.sourceGap;
   if (top >= end) ctx.warn(`第 ${ctx.n} 頁證據頁高度不足`);
   if (page.visual?.kind === 'table' && page.visual.rows.length > CAP.tableRows) ctx.warn(`第 ${ctx.n} 頁表格是 ${page.visual.rows.length} 列，規格是至多 ${CAP.tableRows} 列：刪列或合併相近的列，或拆成兩頁。`);
@@ -1008,7 +1008,7 @@ LAYOUT.panels = (slide, ctx) => {
   const cells = page.visual.items.map((cell) => ({ ...cell, model: isObject(cell.visual) && cell.visual.kind ? prepare(cell.visual, { categoryOrder: ctx.categoryOrder }) : null }));
   // The source row lists missing values, so collect them before drawing it.
   for (const cell of cells) if (cell.model) ctx.missing.push(...cell.model.missing);
-  const end = sourceRow(slide, ctx) - M.sourceGap;
+  const end = sourceRow(slide, ctx, { divider: C.grid }) - M.sourceGap;
   const gap = 96, [a, b] = page.visual.split ?? [1, 1];
   const widths = [a, b].map((s) => ((INNER - gap) * s) / (a + b));
   const B = T.type.body.px, titleH = LABEL * LH;
@@ -1017,7 +1017,7 @@ LAYOUT.panels = (slide, ctx) => {
   let filled = top;
   cells.forEach((cell, j) => {
     const x = M.x + (j ? widths[0] + gap : 0), w = widths[j], path = `visual.items[${j}]`, v = cell.visual;
-    rule(slide, x, top, x + w, top, C.gray);
+    rule(slide, x, top, x + w, top, C.grid);
     checkWrap(ctx, `${path}.title`, cell.title, LABEL, w, 1);
     text(slide, cell.title, { x, y: top + 16, w, h: titleH, color: C.text, bold: true });
     const y = top + 16 + titleH + 16, area = { x, y, w, h: end - noteH - y };

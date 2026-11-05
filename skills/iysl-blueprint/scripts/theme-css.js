@@ -65,8 +65,8 @@ figure { margin: 32px 0; }
 figure svg { display: block; width: 100%; height: auto; max-width: 100%; }
 .chart-scroll { max-width: 100%; overflow-x: auto; }
 /* Figures and tables: generated 「圖 N」「表 N」 label and title above, notes and source below. */
-.exhibit-title, caption { margin-bottom: 10px; color: var(--cp-title); font-weight: 700; line-height: 1.4; }
-.exhibit-label { display: block; color: var(--cp-accent); font-size: var(--cp-small); letter-spacing: .08em; }
+.exhibit-title, caption { margin-bottom: 10px; color: var(--cp-ink); font-weight: 700; line-height: 1.4; }
+.exhibit-label { display: block; color: var(--cp-muted); font-size: var(--cp-small); letter-spacing: .08em; }
 figcaption, .sources, .exhibit-note { margin-top: 10px; color: var(--cp-muted); font-size: var(--cp-small); line-height: 1.5; }
 /* Screen only: the figure's input numbers, closed until the reader opens them. */
 .chart-data { margin-top: 8px; color: var(--cp-muted); font-size: var(--cp-small); }
@@ -159,7 +159,7 @@ tr.total > * { border-top: 1px solid var(--cp-ink); }
   .toc li { padding: 1.2mm 0; }
   /* Section headings, contents and pull quotes sit on the 22 mm line, the inner edge of @page. */
   .toc, .section-heading, .callout { margin-left: calc(-1 * var(--cp-print-indent)); }
-  .section-heading { break-inside: avoid; break-after: avoid; margin-bottom: 4mm; border-top: 1.5pt solid var(--cp-accent); padding-top: 4mm; }
+  .section-heading { break-inside: avoid; break-after: avoid; margin-bottom: 4mm; border-top: 1.5pt solid var(--cp-line); padding-top: 4mm; }
   .section-heading .eyebrow { margin-bottom: 1mm; }
   .section-heading h2 { color: var(--cp-title); margin-bottom: 3mm; }
   .callout { margin-top: 6mm; margin-bottom: 6mm; padding: 0; background: none; border: 0; }

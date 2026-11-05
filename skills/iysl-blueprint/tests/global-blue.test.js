@@ -15,9 +15,10 @@ test('全球藍保留白封面、深藍章節與展示字型', async () => {
     { type: 'cover', claim: '全球藍 Blueprint' },
     { type: 'section', kicker: '設計', claim: '設計 Design' },
     { type: 'statement', claim: '內文 Body' },
+    { type: 'evidence', claim: '證據頁', visual: { kind: 'rank', rows: [{ label: '甲', value: 2 }] } },
   ] });
   const zip = await JSZip.loadAsync(buffer);
-  const slides = await Promise.all([1, 2, 3].map(n => zip.file(`ppt/slides/slide${n}.xml`).async('string')));
+  const slides = await Promise.all([1, 2, 3, 4].map(n => zip.file(`ppt/slides/slide${n}.xml`).async('string')));
   assert.match(slides[0], /<p:bg>[\s\S]*?val="FFFFFF"/);
   assert.match(slides[0], /val="000066"/);
   assert.match(slides[1], /<p:bg>[\s\S]*?val="142979"/);
@@ -27,6 +28,15 @@ test('全球藍保留白封面、深藍章節與展示字型', async () => {
   }
   assert.match(slides[2], /<a:ea typeface="Microsoft JhengHei"/);
   assert.doesNotMatch(slides[2], /typeface="PMingLiU"/);
+  const shapes = (slide) => [...slide.matchAll(/<p:sp>[^]*?<\/p:sp>/g)].map(([shape]) => shape);
+  const lines = (slide) => shapes(slide).filter((shape) => /<a:prstGeom prst="line"/.test(shape));
+  const evidence = shapes(slides[3]);
+  assert.match(evidence.find((shape) => shape.includes('<a:t>證據頁</a:t>')), /val="000099"/);
+  assert.match(evidence.find((shape) => shape.includes('<a:t>4 \/ 4</a:t>')), /val="4A4A4A"/);
+  assert.match(lines(slides[3])[0], /val="E3E3E6"/);
+  assert.ok(lines(slides[3]).slice(1).every((shape) => /val="7F7F7F"/.test(shape)));
+  assert.match(lines(slides[1])[0], /val="BDCCED"/);
+
   const css = themeCss();
   assert.match(css, /--cp-cover: #000066/);
   assert.match(css, /--cp-display-font: "Cambria", "PMingLiU", "Songti TC"/);
@@ -62,7 +72,9 @@ test('全球藍原色經過圖表、HTML 數表與 PowerPoint 原生輸出', asy
     type: 'evidence', claim: '本期結果', visual, sources: { source: '虛構資料' },
   })) });
   const zip = await JSZip.loadAsync(buffer);
-  const chart = await zip.file('ppt/charts/chart1.xml').async('string');
+  const [nativeChart] = zip.file(/^ppt\/charts\/chart\d+\.xml$/);
+  assert.ok(nativeChart);
+  const chart = await nativeChart.async('string');
   const slide = await zip.file('ppt/slides/slide2.xml').async('string');
   for (const hex of ['4A8F5B', 'D09FE2']) assert.match(chart, new RegExp(`val="${hex}"`));
   for (const hex of ['28317B', '015224', '9D2324', 'F6F7FA']) assert.match(slide, new RegExp(`val="${hex}"`));
