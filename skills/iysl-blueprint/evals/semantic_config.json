@@ -5,7 +5,8 @@
   "fallback_positive_concepts": [
     "blueprint",
     "adaptation",
-    "finished"
+    "finished",
+    "standalone_chart"
   ],
   "positive_concepts": {
     "blueprint": {
@@ -37,6 +38,13 @@
         "報告",
         "report",
         "chart"
+      ]
+    },
+    "standalone_chart": {
+      "weight": 0.8,
+      "phrases": [
+        "獨立 SVG 成品圖",
+        "standalone SVG chart"
       ]
     },
     "finished": {

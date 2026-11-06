@@ -1,6 +1,6 @@
 ---
 name: iysl-blueprint
-description: Create finished PowerPoint decks with editable charts, HTML reports, and standalone SVG charts using Blueprint's blue-and-gray visual style; also restyle specified charts or images in existing PowerPoint, Word, Excel, HTML or SVG while preserving data and meaning. Use for Blueprint／藍圖 presentations and reports, or turning scripts, outlines and meeting notes into these finished deliverables. Exclude software or architecture blueprints, design-system maintenance, outline-only requests, and image-prompt decks.
+description: Create finished PowerPoint decks with editable charts and HTML/PDF reports from scripts, outlines or meeting notes. Use Blueprint style for these deliverables or to restyle specified charts or images in PowerPoint, Word, Excel, HTML or SVG. Also use when supplied data should become a finished standalone SVG evidence chart for a presentation or report, with a clear takeaway and source. General charting, exploratory analysis, software or architecture blueprints, design-system maintenance, outlines and image-prompt decks are outside scope.
 metadata:
   compatibility: PPTX assembly requires Node.js 22 or later and npm (run npm ci once in the skill folder); the SVG chart renderer alone needs only Node.js. LibreOffice or PowerPoint (Mac or Windows) is optional for page previews; report PDFs need Chrome, Edge, Chromium or Brave.
 ---
@@ -18,6 +18,7 @@ metadata:
   - 有講者說明：現場簡報（`present`，預設），依下方〈簡報流程〉。
   - 無講者、需要逐頁比較證據：閱讀型簡報（`read`），依〈簡報流程〉及[閱讀型簡報](references/layouts.md#閱讀型簡報)。
   - 連續閱讀、轉寄或列印：直接依 [報告流程](references/report.md)製作 HTML／PDF，不必先拆成投影片。
+  - 只需一張圖：依 [圖表選單](references/charts.md)選圖，以該頁指令交付獨立 SVG 和可重產的圖表 JSON。保留已知單位、期間、來源與影響判讀的限制。
 
 所有交付先依[全交付字級索引](design/README.md#全交付字級索引)選用途、單位與預設來源；既有檔案只套用授權指定目標。
 
@@ -56,7 +57,7 @@ metadata:
 
 1. 讀文字稿，確認聽眾及其先備知識、目的、可用數字、來源與資料缺口，依原則 6 決定解釋深度。使用者說明的背景優先；聽眾或目的不明且會改變取捨時，先問一次。
 2. 選合適的骨架，寫故事線和每頁一句結論。
-3. 依 [版型說明](references/layouts.md)挑支撐結論的版型；需要圖表時依 [圖表選單](references/charts.md)選圖。
+3. 依 [版型說明](references/layouts.md)挑支撐結論的版型，並依 [圖表選單](references/charts.md)主動判斷是否適合用圖。
 4. 寫 `out/story.json`，每張內容頁在 `notes` 放 1～3 句講稿（要說的話、補充細節），計算另列；影響判斷的限制依原則 6 放在頁面上；閱讀型簡報改把講稿寫在頁面上。執行 `node evals/check.mjs out/story.json script.md` 核對；範例：`node evals/check.mjs examples/story.json evals/fixtures/example-script.md`。
 5. 執行 `node scripts/pptx.js out/story.json out/deck.pptx` 建檔。
 6. 依 [預覽與交付](references/layouts.md#預覽與交付)執行 `node scripts/preview.js out/deck.pptx out/preview`；輸出 `page-N.png`、`sheet.png`（整份概覽）、`deck.pdf`。0 項容量警告只代表未偵測到溢出，仍逐頁找孤字與不均勻換行。

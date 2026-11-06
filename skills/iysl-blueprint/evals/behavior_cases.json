@@ -57,11 +57,11 @@
       "prompt": "Blueprint 簡報裡的圖希望同事能在 PowerPoint 直接改數字。資料有：各通路營收（排名）、五年營收與年增率、期初到期末訂單變動。",
       "expected": {
         "must_do": [
-          "use native PowerPoint charts for the ranking and the amount-and-rate combo",
-          "explain that the opening-to-closing bridge embeds as SVG with a PNG fallback and is not editable through Edit Data"
+          "use a native PowerPoint chart and embedded workbook for the ranking",
+          "explain that the amount-and-rate combo and opening-to-closing bridge embed as SVG with PNG fallback and require regenerating from the chart spec for data updates"
         ],
         "must_not_do": [
-          "claim the embedded SVG waterfall updates when its data is edited"
+          "claim the embedded SVG combo or bridge updates through PowerPoint Edit Data"
         ]
       }
     },
@@ -412,6 +412,38 @@
           "compare before and after data and surrounding content",
           "read back document structure",
           "inspect chart at actual document size or disclose visual verification limits"
+        ]
+      }
+    },
+    {
+      "id": "standalone-evidence-chart",
+      "kind": "quality",
+      "prompt": "用 Blueprint 把這組同口徑的資料做成可貼到主管報告的單張圖：甲店等候 12 分鐘、乙店 8 分鐘，2026 年第三季，來源：虛構營運月報。請幫我選圖。",
+      "expected": {
+        "max_questions": 0,
+        "must_do": [
+          "deliver a standalone SVG and its reproducible chart JSON with a supported takeaway",
+          "retain both values, unit, period and source"
+        ],
+        "must_not_do": [
+          "deliver a deck or a full report",
+          "invent a benchmark or earlier period"
+        ]
+      }
+    },
+    {
+      "id": "choose-chart-without-prompting",
+      "kind": "quality",
+      "prompt": "用 Blueprint 做主管閱讀的 HTML 報告。甲店同口徑平均等候時間為 1 月 12 分鐘、2 月 11 分鐘、3 月 8 分鐘、4 月 6 分鐘。來源：虛構營運月報。",
+      "expected": {
+        "max_questions": 0,
+        "must_do": [
+          "choose a trend chart that supports the decline and include all four monthly observations",
+          "provide the supplied source and units"
+        ],
+        "must_not_do": [
+          "require the user to request a chart or choose a chart type",
+          "infer a cause from the trend"
         ]
       }
     }

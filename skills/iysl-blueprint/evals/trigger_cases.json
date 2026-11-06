@@ -68,6 +68,18 @@
     {
       "text": "用藍圖版型做成簡報，保留原始數據。",
       "family": "blueprint-zh"
+    },
+    {
+      "text": "用藍圖把這些門市改善前後的等候時間做成一張圖，保留原始數字和來源，不用做整份簡報。",
+      "family": "standalone-chart-blueprint"
+    },
+    {
+      "text": "把這份各通路數據做成可直接放進主管報告的獨立 SVG 成品圖，幫我選圖、寫清楚結論並附來源。",
+      "family": "standalone-chart-zh"
+    },
+    {
+      "text": "Turn these supplied figures into a finished standalone SVG chart for my presentation, with a clear takeaway and the source.",
+      "family": "standalone-chart-en"
     }
   ],
   "should_not_trigger": [
@@ -110,6 +122,18 @@
     {
       "text": "Blueprint 是什麼意思？",
       "family": "name-only"
+    },
+    {
+      "text": "這份 CSV 有哪些異常和相關性？先幫我探索資料。",
+      "family": "data-exploration"
+    },
+    {
+      "text": "幫我畫一張長條圖。",
+      "family": "generic-chart"
+    },
+    {
+      "text": "把這張 Excel 圖表的字放大、背景改白，其他保持原樣。",
+      "family": "generic-chart-restyle"
     }
   ]
 }
