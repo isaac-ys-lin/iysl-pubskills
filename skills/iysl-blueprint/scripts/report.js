@@ -5,7 +5,7 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { T, formatValue, decimalsOf, prepare, shownDigits, documentCategories, borrowedNotice } from './core.js';
 import { render, reportHeight } from './svg.js';
-import { webThemeCss, themeCss } from './theme-css.js';
+import { themeCss, webThemeCss } from './theme-css.js';
 import { isMain } from './main.js';
 import { SLUG } from './brand.js';
 
@@ -272,15 +272,16 @@ ${items.map((it) => `<div><dt>${esc(it.label)}</dt><dd>${shown(it.value, it)}</d
 </dl>
 </section>`);
   }
-  // Page 1 holds the cover band, contents and summary, then breaks; with cover: "page" it holds the cover only.
-  if (!web) {
-  const front = parts.splice(0, report.cover === 'page' ? 1 : parts.length);
-  parts.unshift(`<div class="report-front"${report.cover === 'page' ? ' data-cover="page"' : ''}>\n${front.join('\n')}\n</div>`);
-  } else {
+  if (web) {
+    // Web: a hero with the message as the headline replaces the cover band; no contents, no page-1 wrapper.
     parts[0] = `<header class="web-hero">
-${report.kicker ? `<p class="eyebrow">${esc(report.kicker)}</p>` : ''}<h1>${esc(report.message)}</h1>
-${report.meta ? `<p class="web-meta">${report.meta.map(m => `${esc(m.label)}：${esc(m.value)}`).join(' · ')}</p>` : ''}
+${report.kicker ? `<p class="eyebrow">${esc(report.kicker)}</p>\n` : ''}<h1>${esc(report.message)}</h1>${report.meta ? `
+<p class="web-meta">${report.meta.map((m) => `${esc(m.label)}：${esc(m.value)}`).join('｜')}</p>` : ''}
 </header>`;
+  } else {
+    // Page 1 holds the cover band, contents and summary, then breaks; with cover: "page" it holds the cover only.
+    const front = parts.splice(0, report.cover === 'page' ? 1 : parts.length);
+    parts.unshift(`<div class="report-front"${report.cover === 'page' ? ' data-cover="page"' : ''}>\n${front.join('\n')}\n</div>`);
   }
   report.sections.forEach((s, i) => {
     const body = s.blocks.map((b, j) => {

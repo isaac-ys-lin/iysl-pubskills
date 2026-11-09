@@ -3,7 +3,7 @@ import { loadTokens } from './tokens.js';
 import { isMain } from './main.js';
 import { SLUG } from './brand.js';
 
-export function themeCss(tokens = loadTokens()) {
+function cssParts(tokens) {
   const c = tokens.color;
   const font = [...tokens.font.latin, ...tokens.font.cjk].map((name) => `"${name}"`).join(', ');
   // Explicit screen sizes are CSS px; legacy layers keep the original slide-size calculation.
@@ -12,7 +12,7 @@ export function themeCss(tokens = loadTokens()) {
   const { margin: pm, type: pt } = tokens.print;
   // ponytail: print front matter (.report-front) longer than one page keeps the 50 mm padding on top of page 2's margin;
   // shorten the summary if it spills.
-  return `:root {
+  const screenCss = `:root {
   --cp-paper: ${c.onDark[0]};
   --cp-ink: ${c.text};
   --cp-muted: ${c.textSecondary};
@@ -105,8 +105,8 @@ tr.total > * { border-top: 1px solid var(--cp-ink); }
   .summary { grid-template-columns: 1fr; padding: 20px; }
   .summary-metrics { grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); }
   .chart-scroll svg { min-width: 640px; max-width: none; }
-}
-/* Chrome clips print content outside the page area and shrinks the whole page when anything overflows on the right,
+}`;
+  const printCss = `/* Chrome clips print content outside the page area and shrinks the whole page when anything overflows on the right,
    so @page sits on the outermost lines (22 mm left, 14 mm right) and body padding sets the 50 / 25 mm text column.
    Sizes come from the design layer's print block; @page takes the numbers, element rules the --cp-print-* variables. */
 @page {
@@ -186,6 +186,12 @@ tr.total > * { border-top: 1px solid var(--cp-ink); }
   .chart-data { display: none; }
   a { color: inherit; }
 }`;
+  return { screenCss, printCss };
+}
+
+export function themeCss(tokens = loadTokens()) {
+  const { screenCss, printCss } = cssParts(tokens);
+  return `${screenCss}\n${printCss}`;
 }
 
 export function replaceTheme(html, css = themeCss()) {
@@ -207,26 +213,14 @@ if (isMain(import.meta.url)) {
   }
 }
 
-// Keep the default CSS byte-for-byte stable; web uses only its screen foundation.
+// Web layout: the report's screen rules without print, plus a hero in the cover's style. Text keeps the 72ch measure; figures and tables use the full column.
 export function webThemeCss(tokens = loadTokens()) {
-  return themeCss(tokens).replace(/\/\*[\s\S]*?\*\//g, '').split('@page')[0] + `
-[data-layout="web"] body { max-width: 1120px; padding: 0 24px 80px; }
-[data-layout="web"] .web-hero { max-width: 65ch; margin: 80px auto 32px; }
-[data-layout="web"] h1, [data-layout="web"] h2 { font-family: var(--cp-display-font); }
-[data-layout="web"] h1 { font-size: clamp(36px, 5vw, 64px); }
-[data-layout="web"] .web-meta { color: var(--cp-muted); font-size: var(--cp-small); }
-[data-layout="web"] section { padding: 48px 0; margin: 0; border-top: 1px solid var(--cp-line); }
-[data-layout="web"] section > * { max-width: 65ch; margin-left: auto; margin-right: auto; }
-[data-layout="web"] .summary { display: block; background: none; border-radius: 0; }
-[data-layout="web"] .summary-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; margin-top: 32px; }
-[data-layout="web"] .summary-metrics > div { min-width: 0; }
-[data-layout="web"] figure { width: 100%; max-width: 900px; }
-[data-layout="web"] .wide { max-width: 100%; }
-[data-layout="web"] .table-scroll, [data-layout="web"] .chart-scroll { max-width: 100%; overflow-x: auto; }
+  return `${cssParts(tokens).screenCss}
+[data-layout="web"] .web-hero { padding: 72px 0 40px; border-bottom: 3px solid var(--cp-accent); }
+[data-layout="web"] .web-hero h1 { color: var(--cp-cover); font-family: var(--cp-display-font); }
+[data-layout="web"] .web-meta { margin: 24px 0 0; color: var(--cp-muted); font-size: var(--cp-small); }
 @media (max-width: 640px) {
-[data-layout="web"] body { padding-left: 20px; padding-right: 20px; }
-[data-layout="web"] .web-hero { margin-top: 48px; }
-[data-layout="web"] .summary-metrics { grid-template-columns: 1fr; }
+[data-layout="web"] .web-hero { padding: 48px 0 32px; }
 }
 `;
 }

@@ -2,6 +2,8 @@
 
 報告是供讀者連續閱讀與轉寄的 HTML 網頁；先寫清楚每節判斷，再選擇能支撐它的段落、表格或圖。內容寫在 `report.json`，由 `scripts/report.js` 產生 HTML；使用者要列印或 PDF 時，再由 `scripts/pdf.js` 印成 PDF。元件和簡報一樣只放有內容的，需要但原稿沒給的資料，在原位標「未提供」。
 
+版型二選一：只在螢幕上讀或轉寄連結，用網頁型（`"layout": "web"`）：開頭以 `message` 當大標，沒有封面橫幅、目錄與列印規則，`pdf.js` 會拒印。使用者要列印或 PDF 時，用預設的報告型（封面、目錄、A4 分頁）。兩者的元件、配色、圖表與數字驗收相同。
+
 完整示例見 [examples/report.json](../examples/report.json) 與產物 [examples/report.html](../examples/report.html)，原稿見 [explain-script.md](../evals/fixtures/explain-script.md)：三節加目錄、封面橫幅、一張 `wide: true` 的圖、一張表、帶目前步驟的流程與一段引言。圖的資料在 [時間圖 JSON](../examples/report-time.json)；處理件數與遺漏件數不是可比較的類別，所以用表而不畫成同一張長條圖。[assets/report.html](../assets/report.html) 是同一套元件的 HTML 原型，供手工修改既有報告時參考。
 
 ## 流程
@@ -26,9 +28,9 @@
 
 | 欄位 | 說明 |
 | --- | --- |
-| `layout` | 選用，`"report"`（預設）或 `"web"`。 |
+| `layout` | 選用。`"web"` 為螢幕閱讀的網頁型；省略或 `"report"` 為可列印的報告型。 |
 | `title` | 報告標題；也印在第 2 頁起的頁尾。 |
-| `message` | 讀者要帶走的一句話，印在封面。 |
+| `message` | 讀者要帶走的一句話，印在封面；網頁型當頁首大標。 |
 | `kicker` | 選用，封面標題上方的小字。 |
 | `meta` | 選用，封面資訊 `[{label, value}]`，建議至多三項，超過會警告；一律留在封面。 |
 | `cover` | 選用。省略時第 1 頁是印到紙邊的封面橫幅，下面接目錄與摘要；填 `"page"` 時第 1 頁只有整頁封面，目錄與摘要移到第 2 頁、接著各節。 |
@@ -113,5 +115,3 @@ PDF：…/out/print/report.pdf；每頁 PNG 與 sheet.png 在 …/out/print
 | `第 N 節最後一段落在第 P 頁開頭，和本節其他內容分開：…` | 節末的段落或引言被擠到下一頁頂端，讀者翻頁才看到本節結論。縮短本節前面的元件、把這句移到節首或併入前一段。 |
 
 印完逐頁看 PNG，尤其留意多頁表格、圖說與圖是否分離，以及封面與章節開頭的位置。轉寄前在手機寬度看一次。
-
-網頁型使用 `"layout": "web"`，適合手機與桌機連續捲動閱讀。標題以 message 呈現，不含封面與目錄；不供列印 PDF，需要 PDF 時使用預設版型。
