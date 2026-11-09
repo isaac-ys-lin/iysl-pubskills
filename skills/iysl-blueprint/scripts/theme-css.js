@@ -206,3 +206,27 @@ if (isMain(import.meta.url)) {
     process.exitCode = 1;
   }
 }
+
+// Keep the default CSS byte-for-byte stable; web uses only its screen foundation.
+export function webThemeCss(tokens = loadTokens()) {
+  return themeCss(tokens).replace(/\/\*[\s\S]*?\*\//g, '').split('@page')[0] + `
+[data-layout="web"] body { max-width: 1120px; padding: 0 24px 80px; }
+[data-layout="web"] .web-hero { max-width: 65ch; margin: 80px auto 32px; }
+[data-layout="web"] h1, [data-layout="web"] h2 { font-family: var(--cp-display-font); }
+[data-layout="web"] h1 { font-size: clamp(36px, 5vw, 64px); }
+[data-layout="web"] .web-meta { color: var(--cp-muted); font-size: var(--cp-small); }
+[data-layout="web"] section { padding: 48px 0; margin: 0; border-top: 1px solid var(--cp-line); }
+[data-layout="web"] section > * { max-width: 65ch; margin-left: auto; margin-right: auto; }
+[data-layout="web"] .summary { display: block; background: none; border-radius: 0; }
+[data-layout="web"] .summary-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; margin-top: 32px; }
+[data-layout="web"] .summary-metrics > div { min-width: 0; }
+[data-layout="web"] figure { width: 100%; max-width: 900px; }
+[data-layout="web"] .wide { max-width: 100%; }
+[data-layout="web"] .table-scroll, [data-layout="web"] .chart-scroll { max-width: 100%; overflow-x: auto; }
+@media (max-width: 640px) {
+[data-layout="web"] body { padding-left: 20px; padding-right: 20px; }
+[data-layout="web"] .web-hero { margin-top: 48px; }
+[data-layout="web"] .summary-metrics { grid-template-columns: 1fr; }
+}
+`;
+}

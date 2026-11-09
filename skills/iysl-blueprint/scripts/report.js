@@ -5,7 +5,7 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { T, formatValue, decimalsOf, prepare, shownDigits, documentCategories, borrowedNotice } from './core.js';
 import { render, reportHeight } from './svg.js';
-import { themeCss } from './theme-css.js';
+import { webThemeCss, themeCss } from './theme-css.js';
 import { isMain } from './main.js';
 import { SLUG } from './brand.js';
 
@@ -23,6 +23,7 @@ function validate(report) {
   const str = (v, path) => need(typeof v === 'string' && v.trim().length > 0, path, '填入非空白文字');
   const list = (v, path) => need(Array.isArray(v) && v.length > 0, path, '提供至少一筆資料的陣列');
   need(isObject(report), 'report', '提供包含 title、message 與 sections 的 JSON 物件');
+  need(report.layout === undefined || ['report', 'web'].includes(report.layout), 'layout', '填 report 或 web');
   str(report.title, 'title');
   str(report.message, 'message');
   need(report.cover == null || report.cover === 'page', 'cover', '填 "page" 改成整頁封面，或省略使用橫幅封面');
@@ -229,6 +230,7 @@ function block(b, n, where, warnings, categoryOrder) {
 
 export function buildReport(report, { baseDir = '.' } = {}) {
   report = resolveReport(report, { baseDir });
+  const web = report.layout === 'web';
   const warnings = [];
   // Validate chart shapes before collecting names; errors retain editable paths.
   report.sections.forEach((s, i) => s.blocks.forEach((b, j) => {
@@ -252,7 +254,7 @@ ${report.meta.map((m) => `<div><dt>${esc(m.label)}</dt><dd>${esc(m.value)}</dd><
 </dl>` : ''}
 </header>`];
   // Contents only when there is enough to skip around in.
-  if (report.sections.length >= 3) parts.push(`<nav class="toc" aria-label="目錄">
+  if (!web && report.sections.length >= 3) parts.push(`<nav class="toc" aria-label="目錄">
 <h2>目錄</h2>
 <ol>
 ${report.sections.map((s, i) => `<li><a href="#${ids[i]}">${esc(s.kicker ? `${s.kicker}：${s.claim}` : s.claim)}</a></li>`).join('\n')}
@@ -271,8 +273,15 @@ ${items.map((it) => `<div><dt>${esc(it.label)}</dt><dd>${shown(it.value, it)}</d
 </section>`);
   }
   // Page 1 holds the cover band, contents and summary, then breaks; with cover: "page" it holds the cover only.
+  if (!web) {
   const front = parts.splice(0, report.cover === 'page' ? 1 : parts.length);
   parts.unshift(`<div class="report-front"${report.cover === 'page' ? ' data-cover="page"' : ''}>\n${front.join('\n')}\n</div>`);
+  } else {
+    parts[0] = `<header class="web-hero">
+${report.kicker ? `<p class="eyebrow">${esc(report.kicker)}</p>` : ''}<h1>${esc(report.message)}</h1>
+${report.meta ? `<p class="web-meta">${report.meta.map(m => `${esc(m.label)}：${esc(m.value)}`).join(' · ')}</p>` : ''}
+</header>`;
+  }
   report.sections.forEach((s, i) => {
     const body = s.blocks.map((b, j) => {
       const n = b.type === 'chart' ? ++figures : b.type === 'table' ? ++tables : 0;
@@ -289,13 +298,13 @@ ${body.join('\n')}${sources}
   // The print footer reads the title and its separator from this CSS string; escape it for CSS first, then for the attribute.
   const footerTitle = `${report.title.replace(/[\\']/g, '\\$&').replace(/\s+/g, ' ')} | `;
   const html = `<!doctype html>
-<html lang="zh-Hant" style="--report-title: '${esc(footerTitle)}'">
+<html lang="zh-Hant"${web ? ' data-layout="web"' : ''} style="--report-title: '${esc(footerTitle)}'">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(report.title)}</title>
 <style id="${SLUG}-theme">
-${themeCss()}
+${web ? webThemeCss() : themeCss()}
 </style>
 </head>
 <body>
