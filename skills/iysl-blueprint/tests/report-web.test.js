@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { buildReport } from '../scripts/report.js';
-import { themeCss, webThemeCss } from '../scripts/theme-css.js';
+import { replaceTheme, themeCss, webThemeCss } from '../scripts/theme-css.js';
 
 const report = JSON.parse(readFileSync('examples/report.json', 'utf8'));
 const web = JSON.parse(readFileSync('examples/report-web.json', 'utf8'));
@@ -41,6 +41,9 @@ test('web CSS keeps the screen rules and drops print', () => {
   assert.ok(base.startsWith(css.slice(0, css.indexOf('[data-layout="web"]'))));
   assert.doesNotMatch(css, /@page|@media print/);
   assert.match(css, /\.web-hero/);
+  const html = build(web).html;
+  assert.equal(replaceTheme(html), html);
+  assert.equal(replaceTheme(build(report).html), build(report).html);
 });
 
 test('web report passes the number check, fails when tampered, and refuses PDF', () => {

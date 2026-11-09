@@ -194,7 +194,20 @@ export function themeCss(tokens = loadTokens()) {
   return `${screenCss}\n${printCss}`;
 }
 
-export function replaceTheme(html, css = themeCss()) {
+// Web layout: the report's screen rules without print, plus a hero in the cover's style. Text keeps the 72ch measure; figures and tables use the full column.
+export function webThemeCss(tokens = loadTokens()) {
+  return `${cssParts(tokens).screenCss}
+[data-layout="web"] .web-hero { padding: 72px 0 40px; border-bottom: 3px solid var(--cp-accent); }
+[data-layout="web"] .web-hero h1 { color: var(--cp-cover); font-family: var(--cp-display-font); }
+[data-layout="web"] .web-meta { margin: 24px 0 0; color: var(--cp-muted); font-size: var(--cp-small); }
+@media (max-width: 640px) {
+[data-layout="web"] .web-hero { padding: 48px 0 32px; }
+}
+`;
+}
+
+// Web-layout pages (data-layout="web" on <html>) get the web CSS, so restyling never brings back print rules.
+export function replaceTheme(html, css = /<html\b[^>]*\bdata-layout=["']web["']/i.test(html) ? webThemeCss() : themeCss()) {
   const pattern = new RegExp(`(<style\\s+id=["']${SLUG}-theme["']\\s*>)[\\s\\S]*?(</style>)`, 'i');
   if (!pattern.test(html)) throw new Error(`找不到 <style id="${SLUG}-theme"> 區塊`);
   // Keep the file's own line endings (Windows checkouts and editors may use CRLF).
@@ -213,14 +226,3 @@ if (isMain(import.meta.url)) {
   }
 }
 
-// Web layout: the report's screen rules without print, plus a hero in the cover's style. Text keeps the 72ch measure; figures and tables use the full column.
-export function webThemeCss(tokens = loadTokens()) {
-  return `${cssParts(tokens).screenCss}
-[data-layout="web"] .web-hero { padding: 72px 0 40px; border-bottom: 3px solid var(--cp-accent); }
-[data-layout="web"] .web-hero h1 { color: var(--cp-cover); font-family: var(--cp-display-font); }
-[data-layout="web"] .web-meta { margin: 24px 0 0; color: var(--cp-muted); font-size: var(--cp-small); }
-@media (max-width: 640px) {
-[data-layout="web"] .web-hero { padding: 48px 0 32px; }
-}
-`;
-}
