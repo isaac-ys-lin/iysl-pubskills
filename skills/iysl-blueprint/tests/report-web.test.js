@@ -6,9 +6,10 @@ import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { buildReport } from '../scripts/report.js';
 import { replaceTheme, themeCss, webThemeCss } from '../scripts/theme-css.js';
+import { checkReport } from '../evals/check-report.mjs';
 
 const report = JSON.parse(readFileSync('examples/report.json', 'utf8'));
-const web = JSON.parse(readFileSync('examples/report-web.json', 'utf8'));
+const web = { ...report, layout: 'web' };
 const build = (r) => buildReport(r, { baseDir: 'examples' });
 
 test('default layout output is unchanged; "report" equals omitted; other values are rejected', () => {
@@ -16,12 +17,6 @@ test('default layout output is unchanged; "report" equals omitted; other values 
   assert.equal(baseline, readFileSync('examples/report.html', 'utf8'));
   assert.equal(build({ ...report, layout: 'report' }).html, baseline);
   assert.throws(() => build({ ...report, layout: 'slides' }), /layout/);
-});
-
-test('web example only differs from the report example by layout', () => {
-  const { layout, ...rest } = web;
-  assert.equal(layout, 'web');
-  assert.deepEqual(rest, report);
 });
 
 test('web layout: hero headline is the message, no cover or contents, same sections', () => {
@@ -48,16 +43,13 @@ test('web CSS keeps the screen rules and drops print', () => {
 
 test('web report passes the number check, fails when tampered, and refuses PDF', () => {
   const { html } = build(web);
+  const script = readFileSync('evals/fixtures/explain-script.md', 'utf8');
+  const options = { report: web, baseDir: 'examples' };
+  assert.equal(checkReport(html, script, options).sections, build(report).sections);
+  assert.throws(() => checkReport(html.replace('</h1>', ' 987654321</h1>'), script, options));
   const dir = mkdtempSync(join(tmpdir(), 'blueprint-web-'));
   try {
     const file = join(dir, 'report.html');
-    const check = () => spawnSync(process.execPath, ['evals/check-report.mjs', file, 'evals/fixtures/explain-script.md', 'examples/report-web.json'], { encoding: 'utf8' });
-    writeFileSync(file, html);
-    const ok = check();
-    assert.equal(ok.status, 0, ok.stderr);
-    assert.match(ok.stdout, /手機與桌機寬度/);
-    writeFileSync(file, html.replace('</h1>', ' 987654321</h1>'));
-    assert.notEqual(check().status, 0);
     writeFileSync(file, html);
     const pdf = spawnSync(process.execPath, ['scripts/pdf.js', file, join(dir, 'pdf')], { encoding: 'utf8' });
     assert.equal(pdf.status, 2);
