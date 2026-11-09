@@ -3,7 +3,7 @@
 // Markup and classes follow assets/report.html; charts come from scripts/svg.js, tables from the same model as the deck.
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
-import { T, formatValue, decimalsOf, prepare, shownDigits, documentCategories, categoryColors, categoryLimit } from './core.js';
+import { T, formatValue, decimalsOf, prepare, shownDigits, documentCategories, borrowedNotice } from './core.js';
 import { render, reportHeight } from './svg.js';
 import { themeCss } from './theme-css.js';
 import { isMain } from './main.js';
@@ -114,6 +114,7 @@ function chartData(spec, m) {
       return byLabel(spec.rows, ['', '實際', '目標', ...(ranges ? ['背景區間'] : [])], (r) => [r.value, r.target, ...(ranges ? [r.ranges ?? '—'] : [])]);
     },
     tornado: () => byLabel(spec.rows, ['', '低', '高'], (r) => [r.low, r.high]),
+    contrib: () => byLabel(spec.rows, ['', ...spec.parts], (r) => r.values),
     waffle: () => ({ head: ['', '數值'], rows: spec.categories.map((c, i) => [esc(c), num(spec.values[i])]) }),
     // An open last bin (to: null) has no upper edge.
     histogram: () => ({ head: [axis.x, unit('數值', spec.suffix)], rows: spec.bins.map((b) => [b.to === null ? `${num(b.from)} 以上` : `${num(b.from)}–${num(b.to)}`, num(b.value)]) }),
@@ -236,8 +237,8 @@ export function buildReport(report, { baseDir = '.' } = {}) {
     catch (error) { throw new Error(`sections[${i}].blocks[${j}].chart：${error.message}`); }
   }));
   const categoryOrder = documentCategories(report.sections.flatMap((s) => s.blocks.filter((b) => b.type === 'chart').map((b) => b.chart)));
-  const folded = categoryColors(categoryOrder, { order: categoryOrder }).folded;
-  if (folded.length) warnings.push(`整份報告超過 ${categoryLimit()} 個類別，「${folded.join('、')}」在每張圖都併入「其他」`);
+  const borrowed = borrowedNotice(categoryOrder, '整份報告');
+  if (borrowed) warnings.push(borrowed);
   const ids = report.sections.map((s, i) => s.id ?? `section-${i + 1}`);
   if (report.meta?.length > 3) warnings.push(`封面資訊是 ${report.meta.length} 項，建議最多 3 項`);
   const items = report.summary?.items ?? [];

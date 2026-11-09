@@ -83,14 +83,16 @@ export function tickText(axis, t, suffix = '') {
   return formatValue(t, { digits: axis.decimals, suffix });
 }
 
-// Color per category name. With a shared order (from the deck), a name keeps its color in every chart;
-// "其他" is gray by name; categories beyond the available palette fold into "其他".
-// Shared document order for unordered categories; ordered/focus semantics stay local.
+// Color per category name, effect first: every chart that fits the palette shows all its categories in color.
+// A name in the document's first `limit` categories keeps that slot in every chart (same name, same color);
+// a later name borrows a slot this chart leaves free. Only a chart with more categories than the palette folds,
+// keeping the best-ranked names; "其他" is gray by name.
 export function documentCategories(visuals) {
   const seen = [];
   for (const v of visuals) {
     if (!v?.kind) continue;
     const names = ['share', 'sharetrend', 'waffle', 'mekko'].includes(v.kind) ? v.categories
+      : v.kind === 'contrib' ? v.parts
       : v.kind === 'grouped' && v.seriesRole === 'categorical' || v.kind === 'line' && !v.focus && v.series.length > 1 ? v.series.map((s) => s.name) : [];
     for (const name of names) if (!seen.includes(name)) seen.push(name);
   }
@@ -106,17 +108,28 @@ export function categoryLimit() {
 export function categoryColors(names, { order } = {}) {
   const limit = categoryLimit();
   const ranked = [...(order ?? []), ...names].filter((n, i, all) => n !== OTHER && all.indexOf(n) === i);
-  const colors = new Map();
-  const folded = [];
-  for (const name of names) {
-    if (name === OTHER) continue;
+  const local = names.filter((n, i) => n !== OTHER && names.indexOf(n) === i).sort((a, b) => ranked.indexOf(a) - ranked.indexOf(b));
+  const kept = local.slice(0, limit), folded = local.slice(limit);
+  const colors = new Map(), used = new Set(), borrowed = [];
+  for (const name of kept) {
     const i = ranked.indexOf(name);
-    if (i < limit) colors.set(name, C.categorical[i]);
-    else folded.push(name);
+    if (i < limit) { colors.set(name, C.categorical[i]); used.add(i); } else borrowed.push(name);
   }
-  folded.sort((a, b) => ranked.indexOf(a) - ranked.indexOf(b));
+  for (const name of borrowed) {
+    let slot = ranked.indexOf(name) % limit;
+    while (used.has(slot)) slot = (slot + 1) % limit;
+    colors.set(name, C.categorical[slot]);
+    used.add(slot);
+  }
   if (folded.length || names.includes(OTHER)) colors.set(OTHER, C.other);
-  return { colors, folded };
+  return { colors, folded, borrowed };
+}
+
+// Document-level notice: names past the shared palette borrow colors, so one color can mean different names in different charts.
+export function borrowedNotice(order, what) {
+  const limit = categoryLimit();
+  const extra = order.filter((n) => n !== OTHER).slice(limit);
+  return extra.length ? `${what}共 ${limit + extra.length} 種類別，超過 ${limit} 色：「${extra.join('、')}」在各圖借用該圖未用的顏色；同一色在不同圖可能代表不同類別，請確認各圖圖例清楚` : null;
 }
 
 export function shares(values) {
@@ -720,6 +733,40 @@ KINDS.pareto = (spec, m) => {
   m.rows.forEach((r, i) => { r.color = i <= m.crossing ? C.focus : C.gray; });
   m.thresholdText = formatValue(m.threshold * 100, { digits: m.digits, suffix: '%' });
   m.axis = niceTicks(0, m.rows[0].value, 4);
+  return m;
+};
+
+// Signed parts per row: positive parts stack right of zero, negative parts left, so offsetting moves stay visible.
+KINDS.contrib = (spec, m, opts) => {
+  need(Array.isArray(spec.parts) && spec.parts.length >= 2 && spec.parts.length <= 4 && spec.parts.every((p) => typeof p === 'string'), 'contrib 需要 2～4 個 parts 名稱');
+  need(new Set(spec.parts).size === spec.parts.length && !spec.parts.includes(OTHER), `contrib 的 parts 名稱不可重複，也不可用「${OTHER}」`);
+  need(Array.isArray(spec.rows) && spec.rows.length, 'contrib 需要 rows');
+  need(spec.net === undefined || typeof spec.net === 'boolean', 'contrib 的 net 只能是 true 或 false');
+  const cats = categoryColors(spec.parts, { order: opts.categoryOrder });
+  if (cats.folded.length) m.warnings.push(`parts 超過 ${categoryLimit()} 色，「${cats.folded.join('、')}」改用灰色`);
+  m.parts = spec.parts.map((name) => {
+    const color = cats.colors.get(name) ?? C.other;
+    return { name, color, ink: textOn(color) };
+  });
+  const focuses = spec.focus === undefined ? [] : Array.isArray(spec.focus) ? spec.focus : [spec.focus];
+  need(focuses.every((name) => typeof name === 'string'), 'contrib 的 focus 需要列名或列名陣列');
+  m.net = spec.net !== false;
+  const signed = (v) => delta(0, v, { digits: m.digits }).text;
+  m.rows = spec.rows.map((r) => {
+    need(r && typeof r.label === 'string' && Array.isArray(r.values) && r.values.length === spec.parts.length && r.values.every(numOrNull),
+      `contrib「${r?.label ?? '未命名'}」的 values 長度或數值不對`);
+    r.values.forEach((v, j) => { if (v === null) m.missing.push(`${r.label}／${spec.parts[j]}`); });
+    const complete = r.values.every(isNum);
+    const net = complete ? Number(r.values.reduce((a, b) => a + b, 0).toFixed(10)) : null;
+    return { label: r.label, values: r.values, texts: r.values.map((v) => (v === null ? null : signed(v))),
+      net, netText: m.net && complete ? signed(net) : null, focus: focuses.includes(r.label) };
+  });
+  for (const name of focuses) if (!m.rows.some((r) => r.label === name)) m.warnings.push(`focus「${name}」不在資料裡`);
+  const sums = m.rows.map((r) => r.values.filter(isNum));
+  need(sums.some((v) => v.length), 'contrib 沒有任何數值');
+  const lo = Math.min(0, ...sums.map((v) => v.filter((x) => x < 0).reduce((a, b) => a + b, 0)));
+  const hi = Math.max(0, ...sums.map((v) => v.filter((x) => x > 0).reduce((a, b) => a + b, 0)));
+  m.axis = niceTicks(lo, hi, 4);
   return m;
 };
 

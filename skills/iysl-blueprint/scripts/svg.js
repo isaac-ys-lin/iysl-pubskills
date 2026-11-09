@@ -756,6 +756,55 @@ DRAW.pareto = (m, W, H, warn) => {
   return P.join('');
 };
 
+DRAW.contrib = (m, W, H, warn) => {
+  const P = [];
+  let lx = 0;
+  const ly = LINE * 0.6;
+  for (const p of m.parts) {
+    P.push(rect(lx, ly - 10, 20, 20, { fill: p.color }));
+    P.push(text(lx + 28, mid(ly), p.name, {}));
+    lx += 28 + textWidth(p.name, PX) + 28;
+  }
+  const netHead = '合計';
+  const netW = m.net ? Math.max(textWidth(netHead, PX), ...m.rows.map((r) => (r.netText ? textWidth(r.netText, PX) : 0))) + 24 : 0;
+  if (m.net) P.push(text(W, mid(ly), netHead, { anchor: 'end' }));
+  if (lx > W - netW) warn('contrib 的圖例超出寬度');
+  const labelW = Math.max(...m.rows.map((r) => textWidth(r.label, PX))) + 20;
+  if (labelW > W * 0.3) warn('contrib 的列名太長，長條區被壓縮');
+  // Room on both sides for a narrow outermost part whose value sits just past the bar end.
+  const pad = Math.max(...m.rows.flatMap((r) => r.texts.filter(Boolean).map((t) => textWidth(t, PX)))) + 10;
+  const x0 = labelW + (m.axis.lo < 0 ? pad : 0), x1 = W - netW - (m.axis.hi > 0 ? pad : 0);
+  const y0 = LINE * 1.6, y1 = H - LINE - 16;
+  const sx = scale(m.axis.lo, m.axis.hi, x0, x1);
+  bottomAxis(m.axis, sx, y1, x0, x1, P, { top: y0 });
+  const band = (y1 - y0) / m.rows.length, bh = clamp(band * 0.6, 14, 48);
+  if (band < PX * 1.4) warn('contrib 的列太多，標籤可能擠在一起');
+  const unlabeled = [];
+  m.rows.forEach((r, i) => {
+    const cy = y0 + band * (i + 0.5);
+    P.push(text(0, mid(cy), r.label, { fill: r.focus ? C.focus : C.text, weight: r.focus ? 600 : undefined }));
+    const outer = { pos: r.values.findLastIndex((v) => v > 0), neg: r.values.findLastIndex((v) => v < 0) };
+    let pos = 0, neg = 0;
+    r.values.forEach((v, j) => {
+      if (v === null || v === 0) return;
+      const from = v > 0 ? pos : neg, to = from + v;
+      if (v > 0) pos = to; else neg = to;
+      // 2px surface gap between neighbouring parts, on the side facing zero.
+      const gap = from === 0 ? 0 : 2;
+      const xa = sx(Math.min(from, to)) + (v > 0 ? gap : 0), xb = sx(Math.max(from, to)) - (v < 0 ? gap : 0);
+      const part = m.parts[j];
+      P.push(rect(xa, cy - bh / 2, xb - xa, bh, { fill: part.color }));
+      if (textWidth(r.texts[j], PX) + 12 <= xb - xa) P.push(text((xa + xb) / 2, mid(cy), r.texts[j], { fill: part.ink, anchor: 'middle', on: part.color }));
+      else if (j === (v > 0 ? outer.pos : outer.neg)) P.push(text(v > 0 ? xb + 8 : xa - 8, mid(cy), r.texts[j], { fill: C.text, anchor: v > 0 ? 'start' : 'end' }));
+      else unlabeled.push(`${r.label} ${part.name} ${r.texts[j]}`);
+    });
+    if (r.netText) P.push(text(W, mid(cy), r.netText, { fill: r.focus ? C.focus : C.text, weight: 600, anchor: 'end' }));
+  });
+  P.push(line(sx(0), y0, sx(0), y1, { stroke: C.text, width: 2 }));
+  if (unlabeled.length) warn(`太窄沒有標數字：${unlabeled.join('、')}，請在圖說或正文補充`);
+  return P.join('');
+};
+
 DRAW.tornado = (m, W, H, warn) => {
   const P = [];
   const labelW = Math.max(...m.rows.map((r) => textWidth(r.label, PX))) + 20;
@@ -890,7 +939,7 @@ export function reportHeight(model) {
     rank: model.rows?.length, slope: model.rows?.length, share: model.rows?.length,
     strip: model.groups?.length, dumbbell: model.rows?.length, funnel: model.steps?.length,
     heat: model.rowLabels?.length, table: model.rows?.length, bullet: model.rows?.length,
-    tornado: model.rows?.length, box: model.groups?.length,
+    tornado: model.rows?.length, box: model.groups?.length, contrib: model.rows?.length,
   }[model.kind];
   return count ? Math.max(360, 80 + count * 68) : 520;
 }

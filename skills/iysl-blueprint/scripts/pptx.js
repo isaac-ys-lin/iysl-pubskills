@@ -4,7 +4,7 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import PptxGenJS from 'pptxgenjs';
 import JSZip from 'jszip';
-import { T, C, SLIDE_FONT, delta, formatValue, textWidth, categoryLimit, categoryColors, documentCategories, prepare, decimalsOf, shownDigits, textOn } from './core.js';
+import { T, C, SLIDE_FONT, delta, formatValue, textWidth, documentCategories, borrowedNotice, prepare, decimalsOf, shownDigits, textOn } from './core.js';
 import { render } from './svg.js';
 import { svgToPng } from './png.js';
 import { isMain, rerunForMode } from './main.js';
@@ -325,7 +325,7 @@ const LAYOUT = {};
 const CAP = { numbers: [2, 4], numbersNote: 1, summary: [2, 3], summaryBody: 3, compare: [2, 4], list: [3, 5], listBody: 1, process: [3, 6], columns: [2, 4],
   columnsBody: Infinity, compareRows: Infinity, tableRows: Infinity, closeRows: Infinity, ...T.capacity };
 const outside = (count, [lo, hi]) => count < lo || count > hi;
-const CHART_KINDS = new Set(['rank', 'line', 'slope', 'share', 'scatter', 'table', 'multiples', 'bridge', 'histogram', 'strip', 'matrix', 'dumbbell', 'funnel', 'heat', 'grouped', 'sharetrend', 'combo', 'bullet', 'waffle', 'mekko', 'pareto', 'tornado', 'box', 'ordered']);
+const CHART_KINDS = new Set(['rank', 'line', 'slope', 'share', 'scatter', 'table', 'multiples', 'bridge', 'histogram', 'strip', 'matrix', 'dumbbell', 'funnel', 'heat', 'grouped', 'sharetrend', 'combo', 'bullet', 'waffle', 'mekko', 'pareto', 'tornado', 'box', 'ordered', 'contrib']);
 const isObject = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
 const isNumber = (v) => typeof v === 'number' && Number.isFinite(v);
 const emptyCell = (v) => isObject(v) && Object.values(v).every((x) => x === null || x === undefined || x === '' || (Array.isArray(x) && !x.length));
@@ -1163,8 +1163,8 @@ export async function build(story) {
   // The section ruler lists every kicker in page order (the cover's kicker is the organisation, not a section).
   const sections = [...new Set(story.pages.filter((p) => p.type !== 'cover' && p.kicker).map((p) => p.kicker))];
   const categoryOrder = deckCategories(story);
-  const folded = categoryColors(categoryOrder, { order: categoryOrder }).folded;
-  if (folded.length) warnings.push(`整份簡報超過 ${categoryLimit()} 個類別，「${folded.join('、')}」在每張圖都併入「其他」`);
+  const borrowed = borrowedNotice(categoryOrder, '整份簡報');
+  if (borrowed) warnings.push(borrowed);
   story.pages.forEach((page, i) => {
     const fn = LAYOUT[page.type];
     const slide = pres.addSlide();

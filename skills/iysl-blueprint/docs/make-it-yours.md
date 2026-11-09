@@ -77,7 +77,19 @@ Blueprint 設計層 focus-gray-test：未通過 47 項檢查，4 項失敗、2 �
 | 缺值要揭露 | `scripts/core.js` 的圖表模型、`scripts/pptx.js` 的 `sourceRow`；`tests/null-behavior.test.js`。 |
 | 增減好壞依指標判定 | `scripts/core.js` 的 `delta`；`tests/core.test.js`、`tests/charts.test.js`。 |
 | 沒內容的版面格可省略，缺少的資料不能藏 | `scripts/pptx.js` 的 `emptyCell`、`sourceRow`；`tests/layouts-phase2.test.js`、`tests/null-behavior.test.js`。 |
-| 類別超過上限按規則併入「其他」 | `scripts/core.js` 的 `categoryColors`、`KINDS.share`；`tests/core.test.js`、`tests/charts.test.js`。 |
+| 顏色效果優先：放得下的圖都上色，超出色盤才併入「其他」 | `scripts/core.js` 的 `categoryColors`、`borrowedNotice`、`KINDS.share`；`tests/core.test.js`、`tests/charts.test.js`、`tests/contrib.test.js`。 |
 | 每頁有來源列 | `scripts/pptx.js` 的 `sourceRow`、`evals/check.mjs`；`tests/evals.test.js`。 |
 
 要改這些判斷，先寫新用途與預期結果，再一起改規則和測試；不要為了讓檢查通過而刪測試。
+
+## 新增圖種
+
+選單缺少能直接畫出主張的圖時，依序補齊這些接點，缺一處就會在建檔或驗收時報錯：
+
+1. `scripts/core.js`：`KINDS.<kind>` 驗證輸入、產生模型與 `axis`；用到類別色時加進 `documentCategories`。
+2. `scripts/svg.js`：`DRAW.<kind>` 畫圖；列數決定高度時加進 `reportHeight`。
+3. `scripts/report.js`：報告「查看資料」表的 `data.<kind>`。
+4. `scripts/pptx.js`：把 kind 加進 `CHART_KINDS`（非原生圖會以 SVG 加 PNG 後備放進簡報）。
+5. `examples/<kind>.json`、`references/charts.md` 的圖種段落與總數，以及 `tests/` 的模型、繪圖、缺值與報告資料表測試。
+
+完成後執行 `npm test`，並用 `node scripts/svg.js examples/<kind>.json out/<kind>.svg` 加 `node scripts/png.js` 看一次實圖。
