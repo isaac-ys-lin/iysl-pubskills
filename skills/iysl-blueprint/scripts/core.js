@@ -199,6 +199,26 @@ export function textWidth(str, px) {
   return em * px;
 }
 
+// Label collision tests shared by the SVG and native renderers. Boxes are { x0, x1, y0, y1 } estimates from textWidth,
+// so both tests ignore contact shallower than `slack` px: only overlaps the estimate is sure of are reported.
+export const boxesOverlap = (a, b, slack = 0) => Math.min(a.x1, b.x1) - Math.max(a.x0, b.x0) > slack
+  && Math.min(a.y1, b.y1) - Math.max(a.y0, b.y0) > slack;
+
+// Whether segment p–q passes through the box shrunk by `slack` on every side (Liang–Barsky clipping).
+export function segmentHitsBox([px, py], [qx, qy], box, slack = 0) {
+  const x0 = box.x0 + slack, x1 = box.x1 - slack, y0 = box.y0 + slack, y1 = box.y1 - slack;
+  if (x0 >= x1 || y0 >= y1) return false;
+  const dx = qx - px, dy = qy - py;
+  let lo = 0, hi = 1;
+  for (const [p, q] of [[-dx, px - x0], [dx, x1 - px], [-dy, py - y0], [dy, y1 - py]]) {
+    if (p === 0) { if (q < 0) return false; continue; }
+    const t = q / p;
+    if (p < 0) lo = Math.max(lo, t); else hi = Math.min(hi, t);
+    if (lo > hi) return false;
+  }
+  return true;
+}
+
 // ---- prepare: spec → model. The model is what both renderers draw (SVG now, PowerPoint native in Phase 3):
 // every mark carries its raw value, its label text and its color; missing values are listed for the source row.
 
@@ -563,7 +583,8 @@ KINDS.table = (spec, m) => {
     need(Array.isArray(r) && r.length === cols.length, `table 每一列要有 ${cols.length} 格`);
     const emphasis = r[0] === spec.emphasis;
     const rowCells = cells(r, r[0] == null ? `第 ${i + 1} 列` : String(r[0]));
-    if (emphasis && cols[0].type === 'text') rowCells[0].color = C.focus;
+    // The row label takes the focus color only where it stays readable on the tint fill; otherwise it keeps body text.
+    if (emphasis && cols[0].type === 'text' && contrast(C.focus, C.tint) >= 4.5) rowCells[0].color = C.focus;
     return { cells: rowCells, emphasis, total: false, fill: emphasis ? C.tint : null, bold: emphasis };
   });
   if (spec.total) {

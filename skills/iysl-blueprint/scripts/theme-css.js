@@ -1,5 +1,6 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { loadTokens } from './tokens.js';
+import { contrast } from './core.js';
 import { isMain } from './main.js';
 import { SLUG } from './brand.js';
 
@@ -87,8 +88,7 @@ th, td { padding: 11px 14px; border-bottom: 1px solid var(--cp-line); vertical-a
 thead th { border-bottom: 2px solid var(--cp-table-rule); color: var(--cp-muted); font-size: var(--cp-small); }
 .num, td[data-type="number"], th[data-type="number"] { text-align: right; white-space: nowrap; }
 tr.emphasis { font-weight: 700; background: var(--cp-tint); }
-tr.emphasis > th[scope="row"] { color: var(--cp-accent); }
-tbody:has(+ tfoot .total) tr:last-child > * { border-bottom: 0; }
+${contrast(c.focus, c.tint) >= 4.5 ? 'tr.emphasis > th[scope="row"] { color: var(--cp-accent); }\n' : ''}tbody:has(+ tfoot .total) tr:last-child > * { border-bottom: 0; }
 tr.total > * { border-top: 1px solid var(--cp-ink); }
 .comparison .recommended { background: var(--cp-tint); }
 .diagnosis, .flow { padding-left: 1.4em; }

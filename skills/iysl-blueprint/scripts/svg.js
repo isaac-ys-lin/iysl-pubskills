@@ -2,7 +2,7 @@
 // dominant-baseline or CSS, so PowerPoint's SVG renderer and resvg agree.
 // node scripts/svg.js chart.json out.svg [--bare] [--width inches] [--height px]
 import { readFileSync, writeFileSync } from 'node:fs';
-import { T, C, FONT_FAMILY, prepare, formatValue, tickText, textWidth } from './core.js';
+import { T, C, FONT_FAMILY, prepare, formatValue, tickText, textWidth, boxesOverlap, segmentHitsBox } from './core.js';
 import { isMain } from './main.js';
 
 // Drawing is synchronous, as is the BOXES collector below. Restore sizes after each render.
@@ -178,6 +178,7 @@ DRAW.line = (m, W, H, warn) => {
   const widest = Math.max(...m.x.map((l) => textWidth(l, PX))) + 12;
   xLabels(m.x, xs, y1, P, Math.max(1, Math.ceil(widest / ((x1 - x0) / (m.x.length - 1)))));
   const order = [...m.series].sort((a, b) => a.focus - b.focus);
+  const lines = m.series.map((s) => ({ name: s.name, runs: runs(s.values, (v, i) => [xs[i], sy(v)]) }));
   for (const s of order) {
     for (const r of runs(s.values, (v, i) => [xs[i], sy(v)])) {
       if (r.length === 1) P.push(circle(r[0][0], r[0][1], 3, { fill: s.color }));
@@ -187,6 +188,10 @@ DRAW.line = (m, W, H, warn) => {
       const [px, py] = [xs[s.peak], sy(s.values[s.peak])];
       P.push(circle(px, py, 5, { fill: s.color }));
       P.push(text(px, py - 14, s.texts[s.peak], { fill: C.focus, weight: 600, anchor: 'middle' }));
+      const box = boxOf(px, py - 14, s.texts[s.peak], PX, 'middle');
+      for (const l of lines) {
+        if (l.runs.some((r) => r.some((p, k) => k > 0 && segmentHitsBox(r[k - 1], p, box, PX * 0.15)))) warn(`標籤「${s.texts[s.peak]}」壓到「${l.name}」的線`);
+      }
     }
   }
   const labels = spread(ends.map((s) => ({ s, y: sy(s.values[s.last]) })), LINE * 0.9, y0, y1, warn);
@@ -880,6 +885,12 @@ export function draw(model, { width = T.chartArea.evidence.width, height = T.cha
     const body = fn(model, width, height, (msg) => model.warnings.push(msg));
     for (const b of BOXES) {
       if (b.x0 < -1 || b.x1 > width + 1 || b.y0 < -1 || b.y1 > height + 1) model.warnings.push(`標籤「${b.str}」超出圖表區`);
+    }
+    // Every text this renderer draws is in BOXES, so any two that clearly overlap are a defect, whatever the chart kind.
+    for (let i = 0; i < BOXES.length; i++) {
+      for (let j = i + 1; j < BOXES.length; j++) {
+        if (boxesOverlap(BOXES[i], BOXES[j], PX * 0.15)) model.warnings.push(`標籤「${BOXES[i].str}」和「${BOXES[j].str}」重疊`);
+      }
     }
     return body;
   } finally {
