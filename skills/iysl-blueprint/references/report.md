@@ -20,7 +20,7 @@
    圖表含模型推導的比例、轉換率、差額或中位數時，提供生成規格：`node evals/check-report.mjs out/report.html script.md out/report.json`。外部圖表相對於 `report.json` 解析；驗收先核對原值，再重建並比對每張 SVG 及其位置，合法衍生標籤只在該圖有效。生成與驗收使用相同設計層，修改圖表或排列後須重產 HTML。雙檔舊入口仍可使用；詳細邊界見 [evals/README.md](../evals/README.md#報告數字驗收)。
 5. 使用者要列印或 PDF 時才印：`node scripts/pdf.js out/report.html out/print`（見下方〈列印 PDF〉）。逐條處理警告後重印，再逐頁看 `page-NN.png`。找不到瀏覽器時 PDF 標「受阻」並附原因，HTML 與驗收照常交付。
 6. 用瀏覽器看手機寬度（網頁型再看桌機寬度）：寬表格與圖應在自己的容器內橫向捲動，頁面本身不應橫向溢出。驗收器與列印檢查都無法代替視覺檢查。
-7. 交付 HTML（有印時加 PDF）、`report.json` 與每張圖的輸入 JSON（自畫圖交 SVG 檔，列為選單外的圖）。和簡報一樣，交付說明集中列出：讀者要帶走的那句話、缺的資料、時間不夠還沒修好的地方。依 [四層交付證據](../SKILL.md#交付證據)分列程式核對、實際預覽、PowerPoint 原生編輯（純報告不適用）及讀者理解；缺少目標讀者回饋時只回報內容檢視。
+7. 交付 HTML（有印時加 PDF）、`report.json` 與每張圖的輸入 JSON（自畫圖交 SVG 檔，列為選單外的圖）。和簡報一樣，交付說明集中列出：讀者要帶走的那句話、缺的資料、時間不夠還沒修好的地方。再依[交付證據](../SKILL.md#交付證據)回報。
 
 ## report.json
 

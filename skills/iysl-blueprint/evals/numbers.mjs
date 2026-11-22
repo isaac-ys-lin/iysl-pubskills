@@ -23,32 +23,50 @@ export const found = (n, allowed) => allowed.some((a) => matches(n, a));
 
 export function calculations(page, original, pageNo) {
   const text = normalize([...(Array.isArray(page.notes) ? page.notes : [page.notes ?? '']), ...(page.sources?.more ?? [])].join('\n'));
-  // shortcut: explicit sums and differences only; extend the grammar when other arithmetic is needed.
+  // Sums and differences, plus one division: a share (a / b) or a growth rate ((a - b) / c).
   const signed = String.raw`[+-]?\s*${literal}\s*%?`;
+  const division = new RegExp(String.raw`^(?:\(\s*(${signed})\s*-\s*(${signed})\s*\)|(${signed}))\s*[/÷]\s*(${signed})$`, 'i');
   const allowed = [];
   for (const match of text.matchAll(calculationPattern)) {
     const expression = match[1].trim();
     const nonfinite = () => { throw new Error(`第 ${pageNo} 頁算式「${expression}」的運算元、累加和與結果都必須是有限數字；請核對數值大小與單位。`); };
     const equation = expression.match(new RegExp(String.raw`^(.+?)\s*=\s*(${signed})$`, 'i'));
-    const unsupported = () => { throw new Error(`第 ${pageNo} 頁算式「${expression}」格式不支援；請使用完整加減算式，例如「計算：1200 + 800 = 2000」，說明文字另以分號隔開。`); };
+    const unsupported = () => { throw new Error(`第 ${pageNo} 頁算式「${expression}」格式不支援；請使用完整加減算式（「計算：1200 + 800 = 2000」）、占比（「計算：1260 / 1800 = 70%」）或成長率（「計算：(1200 - 800) / 800 = 50%」），說明文字另以分號隔開。`); };
     if (!equation) unsupported();
+    const sourced = (text) => {
+      const operand = token(text);
+      if (!operand.valid) nonfinite();
+      if (!found(operand, original)) throw new Error(`第 ${pageNo} 頁算式「${expression}」的 ${operand.text} 不在原稿；請使用文字稿中的運算元。`);
+      const percentage = original.find((a) => a.percent && matches(operand, a));
+      return operand.percent ? operand.value / 100 : percentage ? percentage.value / 100 : operand.value;
+    };
+    const result = token(equation[2]);
+    const scale = result.percent ? 100 : 1;
+    const quotient = equation[1].trim().match(division);
+    if (quotient) {
+      const [, minuend, subtrahend, numerator, denominator] = quotient;
+      const value = (numerator ? sourced(numerator) : sourced(minuend) - sourced(subtrahend)) / sourced(denominator);
+      if (!Number.isFinite(value) || !result.valid) nonfinite();
+      // A quotient rarely terminates: accept the result rounded to the decimals it is written with.
+      const written = result.text.replace(/[,\s%]/g, '');
+      const half = /e/i.test(written) ? 0 : 0.5 * 10 ** -(written.split('.')[1] ?? '').length;
+      if (!equal(value, result.value / scale) && Math.abs(value * scale - result.value) > half * (1 + 1e-9)) {
+        throw new Error(`第 ${pageNo} 頁算式「${expression}」結果不符；請核對除法、四捨五入位數與百分比單位。`);
+      }
+      allowed.push(result);
+      continue;
+    }
     let rest = equation[1].trim(), sum = 0, first = true;
     while (rest) {
       const term = rest.match(new RegExp(first ? String.raw`^(${signed})` : String.raw`^([+-])\s*(${signed})`, 'i'));
       if (!term) unsupported();
-      const operand = token(term[first ? 1 : 2]);
-      if (!operand.valid) nonfinite();
-      if (!found(operand, original)) throw new Error(`第 ${pageNo} 頁算式「${expression}」的 ${operand.text} 不在原稿；請使用文字稿中的運算元。`);
-      const percentage = original.find((a) => a.percent && matches(operand, a));
-      const value = operand.percent ? operand.value / 100 : percentage ? percentage.value / 100 : operand.value;
-      sum += value * (!first && term[1] === '-' ? -1 : 1);
+      sum += sourced(term[first ? 1 : 2]) * (!first && term[1] === '-' ? -1 : 1);
       if (!Number.isFinite(sum)) nonfinite();
       rest = rest.slice(term[0].length).trim();
       first = false;
     }
-    const result = token(equation[2]);
     if (!result.valid) nonfinite();
-    if (!equal(sum, result.value / (result.percent ? 100 : 1))) {
+    if (!equal(sum, result.value / scale)) {
       throw new Error(`第 ${pageNo} 頁算式「${expression}」結果不符；請核對加減與百分比單位。`);
     }
     allowed.push(result);

@@ -278,6 +278,6 @@ node scripts/png.js out/rank.svg out/rank.png
 - 簡報：`evidence` 頁填 `"visual": {"figure": "檔名.svg"}`，路徑相對於 `story.json`；右側結論欄、來源列照常使用。位置與尺寸見[版型說明](layouts.md#版型與各自的主張)；`panels` 的格不支援。
 - 報告：元件 `{"type": "figure", "title": "圖上方標題", "figure": "檔名.svg", "source": "來源"}`，路徑相對於 `report.json`；選用 `note`、`wide`。與圖表共用「圖 N」編號，沒有「查看資料」。
 - SVG 寫法：只有一個 `<svg>` 且有 `viewBox`；文字用 `<text>`，樣式寫在元素屬性上（`fill`、`stroke`、`font-size`），顏色取設計層 `design/tokens.json` 的 `color`。不能含 `<style>`、`<script>`、`<image>`、`<foreignObject>`、巢狀 `<svg>`，建檔時會指出。`id`（箭頭、漸層）加上圖名前綴，同一份報告的圖才不會互相影響。
-- 驗收：`check.mjs` 與 `check-report.mjs` 讀 SVG 內所有文字（含 `<title>`、`<desc>`），圖上的阿拉伯數字和其他畫面文字一樣，要在原稿找得到，或是同頁（報告為同節）加減算式的結果。原稿沒有數字時也能放自畫圖。字不要轉成外框，否則讀不到。
+- 驗收：`check.mjs` 與 `check-report.mjs` 讀 SVG 內所有文字（含 `<title>`、`<desc>`），圖上的阿拉伯數字和其他畫面文字一樣，要在原稿找得到，或是同頁（報告為同節）算式的結果。原稿沒有數字時也能放自畫圖。字不要轉成外框，否則讀不到。
 - 輸出：SVG，簡報內附 PNG 後備；不是 PowerPoint 原生可編輯圖表，要改就改 SVG 檔後重產。交付時列在 SVG 一類，並提醒這是選單外的自畫圖。
 - 最小範例：`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1144 400"><rect x="20" y="120" width="320" height="160" fill="none" stroke="#7F7F7F" stroke-width="3"/><text x="180" y="210" text-anchor="middle" font-size="28">收件</text></svg>`。

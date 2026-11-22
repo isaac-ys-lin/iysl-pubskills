@@ -251,7 +251,21 @@ test('圖表自動計算比例可通過，畫面填入比例仍須可核對', as
   await assert.rejects(check(input, '送出 1,800 人、確認 1,260 人。'), /metric\.value.*70%/);
   await check(input, '送出 1,800 人、確認 1,260 人，轉換率 70%。');
   input.pages[0].notes = '計算：1260 / 1800 = 70%';
-  await assert.rejects(check(input, '送出 1,800 人、確認 1,260 人。'), /算式.*加減/);
+  await check(input, '送出 1,800 人、確認 1,260 人。');
+});
+
+test('占比與成長率算式可驗算，結果依寫出的位數四捨五入', async () => {
+  const script = '去年 800，今年 1,200，目標 3,000。';
+  await check(singlePage({ claim: '成長 50%', notes: '計算：(1200 - 800) / 800 = 50%' }), script);
+  await check(singlePage({ claim: '今年是去年的 1.5 倍', notes: '算法：1,200 ÷ 800 = 1.5' }), script);
+  await check(singlePage({ claim: '達成 26.7%', notes: '計算：800 / 3000 = 26.7%' }), script);
+  await check(singlePage({ claim: '達成 27%', notes: '計算：800 / 3000 = 27%' }), script);
+  await check(singlePage({ claim: '占 0.27', sources: { source: '稿', more: ['計算：800 / 3000 = 0.27'] } }), script);
+  await assert.rejects(check(singlePage({ claim: '達成 26%', notes: '計算：800 / 3000 = 26%' }), script), /算式.*不符/);
+  await assert.rejects(check(singlePage({ claim: '成長 50', notes: '計算：(1200 - 800) / 800 = 50' }), script), /算式.*不符/);
+  await assert.rejects(check(singlePage({ claim: '成長 50%', notes: '計算：(1200 - 900) / 600 = 50%' }), script), /算式.*原稿/);
+  await assert.rejects(check(singlePage({ claim: '999', notes: '計算：800 / 0 = 999' }), '800；0'), /算式.*有限數字/);
+  await assert.rejects(check(singlePage({ claim: '2', notes: '計算：800 / 1200 / 3000 = 2' }), script), /算式.*加減/);
 });
 
 test('千分位、全形、百分比與小數比例可對照，digits 不當成資料', async () => {
