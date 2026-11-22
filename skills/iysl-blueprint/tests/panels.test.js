@@ -72,7 +72,7 @@ test('panels：圖表加表格、清單加文字兩頁可建檔，每格有標�
       assert.ok(t.colors.includes('0D1330'), `格標題用正文色：${t.text}`);
     }
     const dividers = one.filter((s) => s.line && s.colors.includes('E3E3E6'));
-    assert.equal(dividers.length, 3, '兩格頂線與來源橫線');
+    assert.equal(dividers.length, 2, '兩格頂線，來源列不畫橫線');
     near(titles[0].w, titles[1].w * 1.5, '左格寬為右格 1.5 倍');
     assert.ok(titles[0].x + titles[0].w < titles[1].x, '兩格不重疊');
     const chart = one.find((s) => s.chart), table = one.find((s) => s.table);

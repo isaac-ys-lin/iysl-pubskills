@@ -33,9 +33,9 @@ test('全球藍保留白封面、深藍章節與展示字型', async () => {
   const evidence = shapes(slides[3]);
   assert.match(evidence.find((shape) => shape.includes('<a:t>證據頁</a:t>')), /val="000099"/);
   assert.match(evidence.find((shape) => shape.includes('<a:t>4 \/ 4</a:t>')), /val="4A4A4A"/);
-  assert.match(lines(slides[3])[0], /val="E3E3E6"/);
-  assert.ok(lines(slides[3]).slice(1).every((shape) => /val="7F7F7F"/.test(shape)));
-  assert.match(lines(slides[1])[0], /val="BDCCED"/);
+  // No source-row rule: the evidence page draws no E3E3E6 divider line.
+  assert.ok(lines(slides[3]).every((shape) => /val="7F7F7F"/.test(shape)));
+  assert.match(shapes(slides[1]).find((shape) => /<a:t>2 \/ 4<\/a:t>/.test(shape)), /val="BDCCED"/);
 
   const css = themeCss();
   assert.match(css, /--cp-cover: #000066/);

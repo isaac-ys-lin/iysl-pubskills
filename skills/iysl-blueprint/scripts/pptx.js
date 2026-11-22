@@ -88,10 +88,10 @@ function sourceItems(sources = {}, missing = []) {
   return items.filter(Boolean);
 }
 
-// Thin rule with 9 ticks, then source｜unit｜period on up to two lines, page number on the right.
-// Read-deck footnotes sit just above the rule, numbered (1), (2)…
-// Returns the top of that block (the rule when there are no footnotes) so the layout knows where content must stop.
-function sourceRow(slide, ctx, { line = C.gray, ink = C.textSecondary, divider = line } = {}) {
+// source｜unit｜period on up to two lines, page number on the right. No rule or ticks: only the gap they used to fill.
+// Read-deck footnotes sit just above that gap, numbered (1), (2)…
+// Returns the top of that block (the gap when there are no footnotes) so the layout knows where content must stop.
+function sourceRow(slide, ctx, { ink = C.textSecondary } = {}) {
   const pageNo = `${ctx.n} / ${ctx.total}`;
   const avail = INNER - textWidth(pageNo, SOURCE) - 40;
   const rows = [[]];
@@ -105,11 +105,6 @@ function sourceRow(slide, ctx, { line = C.gray, ink = C.textSecondary, divider =
   if (rows.length > T.sourceRow.maxLines) ctx.warn(`第 ${ctx.n} 頁 sources：來源列需要 ${rows.length} 行，上限 ${T.sourceRow.maxLines} 行`);
   const rowH = SOURCE * LH;
   const ruleY = H - M.bottom - rows.length * rowH - 14 - T.stroke.tickLong;
-  rule(slide, M.x, ruleY, W - M.x, ruleY, divider);
-  for (let i = 0; i <= 8; i++) {
-    const tx = M.x + (i * INNER) / 8;
-    rule(slide, tx, ruleY, tx, ruleY + (i % 4 === 0 ? T.stroke.tickLong : T.stroke.tickShort), line);
-  }
   const top = ruleY + T.stroke.tickLong + 14;
   rows.forEach((r, i) => r.forEach(({ it, x: ix, w }) => text(slide, it, { x: M.x + ix, y: top + i * rowH, w: w + 8, h: rowH, px: SOURCE, color: ink })));
   text(slide, pageNo, { x: W - M.x - 200, y: top, w: 200, h: rowH, px: SOURCE, color: ink, align: 'right' });
@@ -653,7 +648,7 @@ LAYOUT.cover = (slide, ctx) => {
   slide.background = { color: hex(C.cover ? C.onDark[0] : C.dark) };
   const [ink, muted] = C.cover ? [C.cover, C.textSecondary] : C.onDark;
   header(slide, page.kicker, story.date, muted);
-  const ruleY = sourceRow(slide, ctx, { line: muted, ink: muted });
+  const ruleY = sourceRow(slide, ctx, { ink: muted });
   const D = T.type.display.px;
   // The estimate counts explicit breaks too, so an automatic wrap keeps its height and never lands on the note.
   const titleLines = checkWrap(ctx, 'claim', page.claim ?? '', D, INNER, TITLE_LINES);
@@ -669,7 +664,7 @@ LAYOUT.section = (slide, ctx) => {
   slide.background = { color: hex(C.cover ? C.dark : C.tint) };
   const [ink, muted] = C.cover ? C.onDark : [C.title, C.textSecondary];
   header(slide, story.title, undefined, muted);
-  const ruleY = sourceRow(slide, ctx, { line: C.cover ? muted : C.gray, ink: muted });
+  const ruleY = sourceRow(slide, ctx, { ink: muted });
   const rulerY = ruleY - 64 - LABEL * LH - 16 - 4;
   const sections = ctx.sections;
   const gap = 24, segW = (INNER - gap * (sections.length - 1)) / sections.length;
@@ -726,7 +721,7 @@ LAYOUT.evidence = (slide, ctx) => {
   const { page, story } = ctx;
   header(slide, page.kicker, story.title);
   const top = contentTop(slide, ctx);
-  const ruleY = sourceRow(slide, ctx, { divider: C.grid });
+  const ruleY = sourceRow(slide, ctx);
   const end = ruleY - M.sourceGap;
   if (top >= end) ctx.warn(`第 ${ctx.n} 頁證據頁高度不足`);
   if (page.visual?.kind === 'table' && page.visual.rows.length > CAP.tableRows) ctx.warn(`第 ${ctx.n} 頁表格是 ${page.visual.rows.length} 列，規格是至多 ${CAP.tableRows} 列：刪列或合併相近的列，或拆成兩頁。`);
@@ -1107,7 +1102,7 @@ LAYOUT.panels = (slide, ctx) => {
   const cells = page.visual.items.map((cell) => ({ ...cell, model: isObject(cell.visual) && cell.visual.kind ? prepare(cell.visual, { categoryOrder: ctx.categoryOrder }) : null }));
   // The source row lists missing values, so collect them before drawing it.
   for (const cell of cells) if (cell.model) ctx.missing.push(...cell.model.missing);
-  const end = sourceRow(slide, ctx, { divider: C.grid }) - M.sourceGap;
+  const end = sourceRow(slide, ctx) - M.sourceGap;
   const gap = 96, [a, b] = page.visual.split ?? [1, 1];
   const widths = [a, b].map((s) => ((INNER - gap) * s) / (a + b));
   const B = T.type.body.px, titleH = LABEL * LH;
@@ -1199,7 +1194,7 @@ LAYOUT.close = (slide, ctx) => {
   const [ink, muted] = C.onDark;
   header(slide, page.kicker, story.title, muted);
   const top = contentTop(slide, ctx, ink, muted);
-  const ruleY = sourceRow(slide, ctx, { line: muted, ink: muted });
+  const ruleY = sourceRow(slide, ctx, { ink: muted });
   const rows = page.visual.rows.map((r, index) => ({ ...r, index })).filter((r) => !emptyCell(page.visual.rows[r.index]));
   if (rows.length > CAP.closeRows) ctx.warn(`第 ${ctx.n} 頁收尾待辦是 ${rows.length} 列，規格是至多 ${CAP.closeRows} 列：合併同一負責人的待辦，或拆成兩頁。`);
   const ownerW = 420, dueW = 240, gap = 48;

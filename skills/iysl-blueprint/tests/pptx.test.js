@@ -187,7 +187,8 @@ test('native rank highlights both named channels and funnel SVG includes loss la
   const media = await Promise.all(files(zip, /\.svg$/).map((name) => zip.file(name).async('string')));
   assert.ok(media.some((s) => s.includes('−600') && s.includes('−540')));
 });
-const sourceY = (root) => Math.max(...nodes(root, 'p:sp').filter((s) => nodes(s, 'a:prstGeom').some((g) => g.attrs.prst === 'line') && Math.abs(geometry(s).w - (T.slide.widthPx - 2 * T.margin.x)) < 0.01).map((s) => geometry(s).y));
+// The source row has no rule; its top sits tickLong + 14 px above the page-number text box.
+const sourceY = (root) => geometry(nodes(root, 'p:sp').find((s) => /^\d+ \/ \d+$/.test(nodes(s, 'a:t').map(textOf).join('')))).y - T.stroke.tickLong - 14;
 const near = (actual, expected, why) => assert.ok(Math.abs(actual - expected) < 0.01, `${why}: ${actual} != ${expected}`);
 
 test('summary validation requires a lead and validates inherited number and optional text fields', () => {

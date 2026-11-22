@@ -914,7 +914,7 @@ export function render(spec, opts = {}) {
   }
 }
 
-// Source row under the chart for standalone output: thin rule with 9 ticks, then source｜unit｜period｜missing.
+// Source row under the chart for standalone output: source｜unit｜period｜missing, no rule or ticks.
 export function framed(spec, opts = {}) {
   const r = render(spec, opts);
   const { model, width: W, height: H } = r;
@@ -925,11 +925,6 @@ export function framed(spec, opts = {}) {
     model.missing.length && T.dataDisplay.missing.sourceField.replace('{item}', model.missing.join('、')),
   ].filter(Boolean);
   const top = H + 32;
-  const P = [line(0, top, W, top)];
-  for (let i = 0; i <= 8; i++) {
-    const long = i % 4 === 0;
-    P.push(line((i * W) / 8, top, (i * W) / 8, top + (long ? T.stroke.tickLong : T.stroke.tickShort)));
-  }
   let x = 0, row = 0;
   const placed = [];
   for (const it of items) {
@@ -940,7 +935,7 @@ export function framed(spec, opts = {}) {
   }
   if (row + 1 > T.sourceRow.maxLines) model.warnings.push(`來源列需要 ${row + 1} 行，超過 ${T.sourceRow.maxLines} 行`);
   const height = top + T.stroke.tickLong + 14 + (row + 1) * LINE + 8;
-  const body = r.body + P.join('') + placed.join('');
+  const body = r.body + placed.join('');
   return { ...r, svg: doc(W, height, body, opts.font), body, height };
 }
 
