@@ -47,9 +47,10 @@ function fixture(t) {
 for (const name of ['tokens.json', 'tokens.blue.json']) {
   test(`${name}: present, read and print changes stay in their own output medium`, async (t) => {
     const dir = fixture(t), tokens = json(join(dir, 'design', name));
+    const baseBodyPt = tokens.type.body.px / 2;
     const base = await outputs(dir, tokens);
     const readBase = await outputs(dir, tokens, 'read');
-    assert.match(base.slide, /sz="2000"/);
+    assert.match(base.slide, new RegExp(`sz="${baseBodyPt * 100}"`));
     assert.match(readBase.slide, /sz="1400"/);
     assert.match(base.html, /--cp-body: 16px;/);
     assert.match(base.html, /--cp-small: 14px;/);
@@ -90,7 +91,7 @@ for (const name of ['tokens.json', 'tokens.blue.json']) {
     const original = await outputs(dir, tokens);
     delete tokens.screen;
     const legacy = await outputs(dir, tokens);
-    assert.match(legacy.html, /--cp-body: 20px;/);
+    assert.match(legacy.html, new RegExp(`--cp-body: ${tokens.type.body.px / 2}px;`));
     assert.notEqual(legacy.screen, original.screen);
     tokens.type.body.px = 38;
     tokens.type.label.px = 26;
@@ -147,7 +148,7 @@ for (const name of ['tokens.json', 'tokens.blue.json']) {
     assert.match(base.html, /font-size="24"/);
     assert.match(base.print, /\[data-tick\] \{ font-size: 24px;/);
     assert.match(base.print, /th, td \{ font-size: var\(--cp-print-body\);/);
-    await sizes('present', 16);
+    await sizes('present', tokens.type.chart.px / 2);
     await sizes('read', 12);
     tokens.type.chart.px = 36;
     const custom = await outputs(dir, tokens);

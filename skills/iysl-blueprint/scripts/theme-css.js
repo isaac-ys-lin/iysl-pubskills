@@ -25,6 +25,8 @@ function cssParts(tokens) {
   --cp-accent: ${c.focus};
   --cp-table-rule: ${c.tableRule ?? c.focus};
   --cp-tint: ${c.tint};
+  --cp-surface-warm: ${c.surfaceWarm ?? c.tint};
+  --cp-accent-warm: ${c.accentWarm ?? c.focus};
   --cp-context: ${c.gray};
   --cp-font: ${font}, sans-serif;
   --cp-body: ${body}px;

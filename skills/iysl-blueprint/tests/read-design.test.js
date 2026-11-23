@@ -55,8 +55,8 @@ test('閱讀設計層：字級、上下邊界與新字級鍵只在閱讀模式�
   });
   const base = child(code);
   assert.deepEqual(base.margin, present.margin);
-  assert.equal(base.chart, 32);
-  assert.equal(base.source, undefined);
+  assert.equal(base.chart, present.type.chart.px);
+  assert.equal(base.source, present.type.source.px);
   assert.equal(base.title, present.type.title.px);
 });
 
@@ -238,8 +238,8 @@ test('閱讀版用精確行距排字，與高度估算一致；標題到 lede、
     const present = (await build({ title: '行距測試', pages: [page] })).buffer;
     const pboxes = spaced(await (await JSZip.loadAsync(present)).file('ppt/slides/slide1.xml').async('string'));
     const ptitle = pboxes.find((s) => s.text === page.claim), plede = pboxes.find((s) => s.text === page.lede);
-    // Presentation titles: 56 px × 1.5 = 42 pt, the pitch the old 125% multiple drew. No box keeps a multiple.
-    assert.deepEqual(ptitle.pts, [4200]);
+    // Presentation titles: 48 px × 1.5 = 36 pt. No box keeps a multiple.
+    assert.deepEqual(ptitle.pts, [3600]);
     assert.ok(pboxes.every((s) => s.pct.length === 0));
     assert.ok(Math.abs(plede.y - (ptitle.y + ptitle.h) - 12) < 1);
   } finally {

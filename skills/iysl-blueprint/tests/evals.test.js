@@ -109,18 +109,18 @@ test('wrap warnings name the field, measured lines, and limit, and diagnose CJK 
   const summary = (body) => make('summary', { lead: '先確認需求', body, items: [{ label: '甲', value: 12 }, { label: '乙', value: 8 }] });
   const input = { pages: [
     summary('甲\r\n乙\r\n丙\r\n丁'),
-    summary('甲'.repeat(21)),
-    make('process', { steps: [{ heading: '甲'.repeat(15), body: '乙'.repeat(14) }, { heading: '交接' }, { heading: '完成' }] }),
-    make('close', { rows: [{ task: '確認', owner: '甲'.repeat(13), due: '乙'.repeat(8) }] }),
-    make('close', { rows: [{ task: '確認', due: '甲\r\n乙\r\n丙\r\n丁' }] }),
+    summary('甲'.repeat(26)),
+    make('process', { steps: [{ heading: '甲'.repeat(15), body: '乙'.repeat(17) }, { heading: '交接' }, { heading: '完成' }] }),
+    make('close', { rows: [{ task: '確認', owner: '甲'.repeat(15), due: '乙'.repeat(9) }] }),
+    make('close', { rows: [{ task: '確認', due: '甲\r\n乙\r\n丙\r\n丁\r\n戊' }] }),
   ] };
   const { warnings } = await check(input, '甲 12 件，乙 8 件。依原稿確認需求。');
   assert.ok(warnings.some((w) => /第 1 頁.*visual\.body.*4 行.*上限 3 行/.test(w)));
-  assert.ok(warnings.some((w) => /第 5 頁.*visual\.rows\[0\]\.due.*4 行.*上限 3 行/.test(w)));
+  assert.ok(warnings.some((w) => /第 5 頁.*visual\.rows\[0\]\.due.*5 行.*上限 4 行/.test(w)));
   for (const [page, field] of [[2, 'visual.body'], [3, 'visual.steps[0].heading'], [3, 'visual.steps[0].body'], [4, 'visual.rows[0].owner'], [4, 'visual.rows[0].due']]) {
     assert.ok(warnings.some((w) => w.includes(`第 ${page} 頁`) && w.includes(field) && /2 行.*上限 \d+ 行.*末行.*1 個中文字/.test(w)), `${page} ${field}`);
   }
-  const clean = await check({ pages: [summary('甲'.repeat(25)), make('close', { rows: [{ task: '確認', due: '乙'.repeat(9) }] })] }, '甲 12 件，乙 8 件。');
+  const clean = await check({ pages: [summary('甲'.repeat(25)), make('close', { rows: [{ task: '確認', due: '乙'.repeat(10) }] })] }, '甲 12 件，乙 8 件。');
   assert.ok(!clean.warnings.some((w) => w.includes('末行')));
 });
 

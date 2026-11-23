@@ -53,6 +53,8 @@ export function cleanFigure(source, path = 'figure') {
 // Every piece of text in the figure, one <text> per line; <tspan> pieces stay joined so a split number still reads as one.
 // <title> and <desc> are included: stricter than the screen, never looser.
 export const figureText = (svg) => decode(svg.replace(/<\/?text\b[^>]*>/gi, '\n').replace(/<[^>]*>/g, ''));
+// Visible text drawn on screen (excludes non-rendered <title> and <desc>), used to verify whether a claim number is visible.
+export const figureVisibleText = (svg) => figureText(svg.replace(/<(title|desc)\b[^>]*>[\s\S]*?<\/\1>/gi, ''));
 
 export function resolveFigure(figure, { baseDir = '.', path = 'figure' } = {}) {
   if (isObject(figure) && typeof figure.svg === 'string') return { ...figure, ...cleanFigure(figure.svg, path) };

@@ -17,7 +17,7 @@
 | `visual` | 依版型放圖表或結構化內容；欄位見下表。 |
 | `sources` | 每頁可見來源列：`source` 必填；已知時填 `unit`、`period`；`more` 是會上投影片的口徑、算法或缺口字串陣列。 |
 | `notes` | 講者備註，可為字串或字串陣列，不在畫面顯示。 |
-| `build` | 現場簡報選填 `true`：`list`、`process`、`columns`、`flow`、`numbers` 的項目每按一下淡入一項，標題與來源列一開始就在；因果圖的箭頭跟它指向的方框一起出現。講者要逐項說明時才用；閱讀型簡報與其他版型填了會報錯。預覽圖和 PDF 顯示全部出現後的畫面，播放效果要在 PowerPoint 投影片放映實測。 |
+| `build` | 現場簡報選填 `true`：`list`、`process`、`columns`、`flow`、`numbers`、`evidence`、`scorecard`、`panels` 支援每按一下以 0.25 秒克制淡入（只進場、不變暗）；`evidence` 與 `panels` 的圖表／表格／自畫圖在換頁時即刻顯示，右欄重點與文字格再逐點進場；因果圖的箭頭跟它指向的方框一起出現。閱讀型簡報填了會報錯。 |
 
 `note` 是畫面補充，`notes` 是講稿。選填格若稿子沒有提及，省略整格；不要填空白卡片或佔位字。論證需要、讀者會以為有的數字若未提供，數字格或比較格用 `null` 保留位置，畫面標「未提供」並列入來源列；`0` 是有效觀察值。證據頁的 `table` 圖種也在缺值格原位標「未提供」。其他圖表的 `null` 可能留白、斷線或略去圖元，依[圖表選單](charts.md)處理並列入來源列；若缺值位置本身是論證重點，改用能在原位標示的數字、比較或表格版型。來源列建議兩行內，超出會警告而不縮字。圖表 `visual.source` 不能代替頁面的 `sources.source`。
 
@@ -33,13 +33,15 @@
 | 主管摘要 `summary` | 建議這樣做，關鍵數字支持它。 | `{lead, body?, items}`；左欄一行建議和至多三行理由，右欄建議 2～3 個數字格。 |
 | 章節 `section` | 接下來處理這個問題。 | 無；用 `kicker`、`claim`、`note`。 |
 | 一句話 `statement` | 先記住這個判斷。 | 無；選用頁面 `focus` 指定 `claim` 中的原文，找不到會警告。 |
-| 證據 `evidence` | 這張圖或表支持標題判斷。 | 一張[圖表](charts.md)，或選單外的[自畫圖](charts.md#自畫圖) `{"figure": "檔名.svg"}`；選用頁面 `metric: {label?, value, unit?, digits?}` 和 `note` 作右側結論欄。 |
+| 證據 `evidence` | 這張圖或表支持標題判斷。 | 一張[圖表](charts.md)，或選單外的[自畫圖](charts.md#自畫圖) `{"figure": "檔名.svg"}`；選用右側結論欄：`metric`、`takeaway`、`points`（支援字串或雙層重點 `{lead, body?}`，左附 4px 色條）與 `note`。 |
+| 座標判讀 `scorecard` | 先看整體座標數字，再看下方策略判讀。 | `{metrics: [...], cards: [{kicker?, heading, body?, focus?}], focus?}`；上層 2～4 個暖底 KPI 座標帶，下層 2～4 張判讀卡，選用 `takeaway`。 |
+| 雙格並排 `panels` | 兩個視角並排對照（現場與閱讀版皆支援）。 | `{items: [{title, visual, note?}, {title, visual, note?}], split?}`；每格可放圖表、表格、自畫 SVG `{"figure": "..."}`、雙層重點 `{"points": [...]}`、清單或文字。 |
 | 數字 `numbers` | 這幾個指標一起說明狀態。 | `items: [{label, value, unit?, ...}]`；建議 2～4 格，過長數字與高度會警告。 |
-| 診斷清單 `list` | 這幾件事需要處理；原稿有優先序時標出重點。 | `items` 3～5 項；選用 `tag`／`focus`，列間細線。 |
-| 無日期流程 `process` | 事情照這個順序走，現在在這一步。 | `steps` 3～6 步；`focus` 標目前步驟，超出欄寬會警告。 |
+| 診斷清單 `list` | 這幾件事需要處理；原稿有優先序時標出重點。 | `items` 3～5 項；選用 `tag`／`focus`（左 4px 色條，標題維持近黑），列間細線。 |
+| 無日期流程 `process` | 事情照這個順序走，現在在這一步。 | `steps` 3～6 步；`focus` 標目前步驟圓點與標籤（正文維持深色不染藍）。 |
 | 核心數字 `kpi` | 這一個數字最重要。 | `main` 含 1～3 個 `benchmarks`，`secondary` 0～4 個。 |
-| 因果 `flow` | A 加 B 造成 C，所以做 D。 | `nodes` 2～5 個，`connectors` 連接相鄰方框；預設強調最後一框。 |
-| 並列重點 `columns` | 這幾件事並列，不分先後。 | `items` 2～4 欄，選用 `focus` 強調一欄。 |
+| 因果／遞進 `flow` | 橫向因果（`nodes`）或雙層遞進卡（`pairs`）。 | `nodes` 2～5 框（A→B→C）；或 `pairs` 2～4 欄（上層暖米底 `from` → 箭頭 `↓` → 下層白底細框 `to`，可填 `fromLabel`／`toLabel`）。 |
+| 並列重點 `columns` | 這幾件事並列；設 `focus` 時以暖米底＋頂色條襯托。 | `items` 2～4 欄，選用 `focus` 強調一欄（標題維持近黑）與選用 `takeaway`。 |
 | 方案比較 `compare` | 在同一組條件下，這個方案較適合。 | `rows` 列名及 `options` 2～4 個方案；每個 `values` 與列名逐格對應。超出 2～4 個才警告。 |
 | 月份時程 `steps` | 已知的工作照這段月份安排。 | `start`、`end`、`phases`；日期必須是 `YYYY-MM`，列高不足會警告。 |
 | 決議事項 `close` | 下一步由誰做什麼、何時完成。 | `rows: [{task, owner?, due?}]`；列高不足會警告。 |
@@ -111,21 +113,23 @@
 | `columns` | 2～4 欄 | 2～5 欄，每欄 `body` 至多 6 行，可加一列 `takeaway` |
 | `compare` | 2～4 個方案 | 2～5 個方案，至多 8 列 |
 | `evidence` 的 `table` | 依可用高度 | 至多 12 列 |
-| `evidence` 的 `points` | 不支援 | 2～4 點，每點至多 2 行 |
+| `evidence` 的 `points` | 2～4 點（支援字串或雙層重點 `{lead, body?}`） | 2～4 點，每點至多 2 行 |
 | `close` | 依可用高度 | 至多 12 列 |
-| `panels` | 不支援 | 恰好 2 格，每格 `note` 至多 3 行 |
-| `footnotes` | 不支援 | 不限則數，10 pt 依頁寬換行，佔用內容區下方高度 |
+| `panels` | 恰好 2 格，每格 `note` 至多 3 行 | 恰好 2 格，每格 `note` 至多 3 行 |
+| `scorecard` | 上層 2～4 指標＋下層 2～4 判讀卡 | 上層 2～4 指標＋下層 2～4 判讀卡 |
+| `footnotes` | 11 pt 依頁寬換行，佔用內容區下方高度 | 10 pt 依頁寬換行，佔用內容區下方高度 |
 
 `summary` 規格是 2～3 格：現場簡報標題一行時，3 格都加 `note` 仍放得下；標題兩行或加 `lede` 時，每格都加 `note` 只放得下 2 格，否則刪 `note`、把比較基準移到 `body`，或刪格。閱讀型簡報 3 格加 `note` 配兩行標題仍放得下，4 格加 `note` 只在標題一行、沒有 `lede` 與註腳時放得下。`close` 12 列是標題一行、沒有 `lede` 時的上限。依警告刪格、刪列或拆頁。
 
-### 新欄位
+### 混合簡報與閱讀版共通強化欄位
 
-沒有講者，要說的話就要寫在頁面上。以下欄位只有閱讀型支援，現場簡報用到時驗收失敗：
+以下欄位**現場簡報（`present`）與閱讀型（`read`）皆可使用**（現場上台時能讓視覺圖表搭配俐落的雙層口語重點，兼顧一眼看懂與上台順口；閱讀型則是主要承載全文的欄位）：
 
-- `evidence` 右欄：`takeaway` 一句結論（12 pt 粗體），`points` 2～4 點理由（12 pt，每點至多 2 行），其後接既有的 `note`（14 pt，寫怎麼讀與資料限制）。三者都沒有時建檔會警告右欄空白。重點數字 `metric` 仍在右欄最上方，但會占掉 `points` 與 `note` 的高度。
-- `columns` 的 `takeaway`：頁面層一句，以一列 12 pt 粗體排在各欄下方。
-- 任一頁的 `footnotes`：字串陣列，自動編號為「(1)」「(2)」，以 10 pt 排在來源列上方。正文自己寫半形「(1)」標記，不用上標。驗收器掃數字時會剔除不超過註腳數的「(N)」，其餘數字（含 `takeaway`、`points`、`footnotes` 裡的數字）都要有原稿依據。
+- `evidence` 右欄：`takeaway` 一句結論（粗體），`points` 2～4 點（支援純字串項目，或雙層物件 `{lead, body?}`——左側 4px 焦點色條＋8–12 字黑粗體領頭句＋18–25 字自然口語補充），其後接既有的 `note`。閱讀型若三者都沒有會警告右欄空白；現場版省略右欄時圖表自動展開為全寬。
+- `columns`／`scorecard` 的 `takeaway`：頁面層一句粗體收斂，排在各欄或卡片下方。
+- 任一頁的 `footnotes`：字串陣列，自動編號為「(1)」「(2)」，以頁底來源字級（現場 11 pt、閱讀 10 pt）排在來源列上方，專門承載口徑與排除界線，避免把稽核語氣塞進主視覺正文。
 - `panels` 版型：見下節。
+- `scorecard` 與 `flow.visual.pairs`：提供高階主管簡報常用的「上方 KPI 座標帶＋下方判讀卡」與「上層暖米底現有基礎 → 箭頭 → 下層延伸方向」雙層遞進結構。
 
 ```json
 {
@@ -152,7 +156,7 @@
 
 ### panels
 
-`panels` 一頁並排兩格，各放一張圖、一張表、一份清單或一段文字。`visual` 為 `{items: [{title, visual, note?}, {title, visual, note?}], split?}`：`items` 恰好兩格；格標題 12 pt；格內 `visual` 是圖表或表格的 `{kind, …}`（同[圖表欄位](charts.md)，表格用 `table` 圖種）、清單 `{items: [{heading, body?}]}` 或一段文字字串（正文 14 pt）；`note` 12 pt、至多 3 行，超出警告。預設兩格等寬，`split: [3, 2]` 依比例分寬。格內數字與註一樣要能在原稿找到。
+`panels` 一頁並排兩格，**現場（`present`）與閱讀（`read`）皆可使用**。`visual` 為 `{items: [{title, visual, note?}, {title, visual, note?}], split?}`：`items` 恰好兩格；格標題現場為 15 pt 粗體（`chartTitle`）、閱讀為 12 pt 粗體；格內 `visual` 在六種形態中擇一填寫（不得混填）：圖表或表格 `{kind, …}`（同[圖表欄位](charts.md)）、自畫 SVG 圖 `{figure: "檔名.svg"}`、雙層重點 `{points: [{lead, body?} | string]}`、清單 `{items: [{heading, body?}]}` 或文字字串（現場 16 pt、閱讀 14 pt）；`note` 12 pt、至多 3 行，超出警告。預設兩格等寬，`split: [3, 2]` 依比例分寬。格內數字（含圖表自動換算比例與自畫圖可見文字）與註都要能回到原稿。
 
 ```json
 {

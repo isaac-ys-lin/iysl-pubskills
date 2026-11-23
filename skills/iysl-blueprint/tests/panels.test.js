@@ -141,7 +141,7 @@ test('panels：格數不是 2、格內缺 title、visual 種類不支援或 spli
     [(p) => { p.visual.items.push(p.visual.items[0]); }, /第 2 頁：pages\[1\]\.visual\.items .*恰好兩格/],
     [(p) => { delete p.visual.items[1].title; }, /第 2 頁：pages\[1\]\.visual\.items\[1\]\.title .*第 2 格/],
     [(p) => { p.visual.items[0].visual = { kind: 'pie', rows: [] }; }, /第 2 頁：pages\[1\]\.visual\.items\[0\]\.visual\.kind .*第 1 格/],
-    [(p) => { p.visual.items[1].visual = 42; }, /第 2 頁：pages\[1\]\.visual\.items\[1\]\.visual .*第 2 格.*chart、table、list 或 text/],
+    [(p) => { p.visual.items[1].visual = 42; }, /第 2 頁：pages\[1\]\.visual\.items\[1\]\.visual .*第 2 格.*chart、table、figure、points、list 或 text/],
     [(p) => { p.visual.items[1].visual = { items: [{ body: '沒有標題' }] }; }, /第 2 頁：pages\[1\]\.visual\.items\[1\]\.visual\.items\[0\]\.heading/],
     [(p) => { p.visual.items[0].note = 7; }, /第 2 頁：pages\[1\]\.visual\.items\[0\]\.note/],
     [(p) => { p.visual.split = [3, 0]; }, /第 2 頁：pages\[1\]\.visual\.split/],
@@ -177,13 +177,14 @@ test('panels：格內表格超過列數上限時警告並給改法', () => {
   assert.ok(warnings.includes('第 1 頁第 1 格表格是 13 列，規格是至多 12 列：刪列，或把這張表移到 evidence 頁。'), warnings.join('\n'));
 });
 
-test('panels：簡報版 story 使用時，validateStory 與驗收器都說明只有閱讀版支援', () => {
+test('panels：現場簡報模式也可使用 panels，驗收與建檔正常通過', () => {
   const { mode, ...present } = fixture();
   assert.equal(mode, 'read');
-  assert.throws(() => validateStory(present), /第 1 頁：pages\[0\]\.type 格式不正確；請在根層填 "mode": "read"（只有閱讀版支援 panels）/);
+  present.pages.forEach((p) => { p.notes = '說明雙格對照重點。'; });
+  assert.doesNotThrow(() => validateStory(present));
   const result = checkCli(present);
-  assert.equal(result.status, 1);
-  assert.match(result.stderr, /驗收失敗：第 1 頁：.*只有閱讀版/);
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /通過：2 頁/);
 });
 
 test('panels：兩格都是文字或清單時，頁面填滿低於 70% 會警告；含圖表或表格的格不估填滿', () => {

@@ -120,11 +120,11 @@ test('footnotes 自動編號、10 pt，置於來源行上方', async () => {
   assert.ok(lowest < notes[0].y, '右欄內容在註腳上方');
 });
 
-test('簡報版用到 takeaway、points 或 footnotes 時驗收失敗，說明只有閱讀版支援', () => {
-  for (const extra of [{ takeaway: '甲最多。' }, { points: ['一', '二'] }, { footnotes: ['註'] }]) {
-    assert.throws(() => validateStory({ pages: [evidence(extra)] }), /第 1 頁：.*只有閱讀版支援/);
+test('簡報版也支援 takeaway、points（含雙層物件）與 footnotes，閱讀版同樣通過', () => {
+  for (const extra of [{ takeaway: '甲最多。' }, { points: ['一', '二'] }, { points: [{ lead: '甲最多', body: '領先乙一半。' }, { lead: '乙成長', body: '差距可能縮小。' }] }, { footnotes: ['註'] }]) {
+    assert.doesNotThrow(() => validateStory({ pages: [evidence(extra)] }));
   }
-  assert.throws(() => validateStory({ pages: [{ type: 'columns', claim: '並列', sources, takeaway: '甲', visual: { items: [{ heading: '甲' }, { heading: '乙' }] } }] }), /只有閱讀版支援/);
+  assert.doesNotThrow(() => validateStory({ pages: [{ type: 'columns', claim: '並列', sources, takeaway: '甲', visual: { items: [{ heading: '甲' }, { heading: '乙' }] } }] }));
   assert.doesNotThrow(() => validateStory({ mode: 'read', pages: [evidence({ takeaway: '甲', points: ['一', '二'], footnotes: ['註'] })] }));
 });
 

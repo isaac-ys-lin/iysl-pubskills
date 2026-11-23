@@ -67,8 +67,11 @@ export function checkDesign(design) {
   for (const key of ['text', 'textSecondary', 'better', 'worse', 'unchanged', 'dark', 'tint', 'focus', 'gray', 'other']) {
     validHex(`color.${key}`, c?.[key]);
   }
-  // Optional: the table header rule; without it the engine uses color.focus.
+  // Optional extended work-palette tokens; legacy layers omit them and fall back to focus / tint.
   if (c?.tableRule !== undefined) validHex('color.tableRule', c.tableRule);
+  if (c?.surfaceWarm !== undefined) validHex('color.surfaceWarm', c.surfaceWarm);
+  if (c?.accentWarm !== undefined) validHex('color.accentWarm', c.accentWarm);
+  if (c?.sectionPaper !== undefined) validHex('color.sectionPaper', c.sectionPaper);
   for (const [key, min] of [['onDark', 2], ['categorical', 1], ['ordered', 2]]) {
     const values = c?.[key];
     if (!Array.isArray(values) || values.length < min) failFormat(`color.${key}`, values, `至少 ${min} 個色碼`, '補足色階，不能用空色階產生圖表');
@@ -107,6 +110,16 @@ export function checkDesign(design) {
   }
   c.onDark.slice(0, 2).forEach((ink, i) => minimum(`color.onDark[${i}] ${ink} 在 dark ${c.dark} 上對比`, contrast(ink, c.dark), 4.5, '提高字色亮度，或壓低 dark 的亮度'));
   minimum(`color.text ${c.text} 在 tint ${c.tint} 上對比`, contrast(c.text, c.tint), 4.5, '拉開正文與 tint 的亮度差');
+  if (c.surfaceWarm) {
+    for (const key of ['text', 'textSecondary', 'focus']) {
+      minimum(`color.${key} ${c[key]} 在 surfaceWarm ${c.surfaceWarm} 上對比`, contrast(c[key], c.surfaceWarm), 4.5, `拉開 ${key} 與 surfaceWarm 的亮度差`);
+    }
+  }
+  if (c.sectionPaper) {
+    const secTitle = c.cover ?? c.title;
+    minimum(`章節標題 ${secTitle} 在 sectionPaper ${c.sectionPaper} 上對比`, contrast(secTitle, c.sectionPaper), 4.5, '拉開章節標題與 sectionPaper 的亮度差');
+    minimum(`color.textSecondary ${c.textSecondary} 在 sectionPaper ${c.sectionPaper} 上對比`, contrast(c.textSecondary, c.sectionPaper), 4.5, '拉開次要文字與 sectionPaper 的亮度差');
+  }
 
   const fills = [['focus', c.focus], ...c.categorical.map((v, i) => [`categorical[${i}]`, v]), ...c.ordered.map((v, i) => [`ordered[${i}]`, v]), ['other', c.other], ['tint', c.tint]];
   for (const [key, fill] of fills) {

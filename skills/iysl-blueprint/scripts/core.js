@@ -41,6 +41,7 @@ export function delta(prev, curr, { better = 'higher', mode = 'abs', digits = 0,
   if (!isNum(prev) || !isNum(curr)) return null;
   if (mode === 'pct' && prev === 0) mode = 'abs';
   const d = mode === 'pct' ? ((curr - prev) / Math.abs(prev)) * 100 : curr - prev;
+  if (!Number.isFinite(d)) return null;
   if (d === 0) return { text: tokens.delta.signs.unchanged, color: C.unchanged };
   const unit = mode === 'pp' ? ` ${tokens.delta.percentOfPercent}` : mode === 'pct' ? '%' : suffix;
   const sign = d > 0 ? tokens.delta.signs.increase : tokens.delta.signs.decrease;

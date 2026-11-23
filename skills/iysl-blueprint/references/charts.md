@@ -275,7 +275,7 @@ node scripts/png.js out/rank.svg out/rank.png
 
 選單的圖都畫不出主張時，自己畫一張 SVG，存在 `story.json` 或 `report.json` 旁邊，由引擎放進成品；不在產生後手動貼圖。
 
-- 簡報：`evidence` 頁填 `"visual": {"figure": "檔名.svg"}`，路徑相對於 `story.json`；右側結論欄、來源列照常使用。位置與尺寸見[版型說明](layouts.md#版型與各自的主張)；`panels` 的格不支援。
+- 簡報：`evidence` 頁或 `panels` 格填 `"visual": {"figure": "檔名.svg"}`，路徑相對於 `story.json`；右側結論欄、來源列照常使用。位置與尺寸見[版型說明](layouts.md#版型與各自的主張)。
 - 報告：元件 `{"type": "figure", "title": "圖上方標題", "figure": "檔名.svg", "source": "來源"}`，路徑相對於 `report.json`；選用 `note`、`wide`。與圖表共用「圖 N」編號，沒有「查看資料」。
 - SVG 寫法：只有一個 `<svg>` 且有 `viewBox`；文字用 `<text>`，樣式寫在元素屬性上（`fill`、`stroke`、`font-size`），顏色取設計層 `design/tokens.json` 的 `color`。不能含 `<style>`、`<script>`、`<image>`、`<foreignObject>`、巢狀 `<svg>`，建檔時會指出。`id`（箭頭、漸層）加上圖名前綴，同一份報告的圖才不會互相影響。
 - 驗收：`check.mjs` 與 `check-report.mjs` 讀 SVG 內所有文字（含 `<title>`、`<desc>`），圖上的阿拉伯數字和其他畫面文字一樣，要在原稿找得到，或是同頁（報告為同節）算式的結果。原稿沒有數字時也能放自畫圖。字不要轉成外框，否則讀不到。

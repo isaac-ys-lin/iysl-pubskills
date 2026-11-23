@@ -83,13 +83,19 @@ test('自畫圖拒絕驗收器讀不到或畫不出來的內容，並指出原�
   assert.throws(() => resolveFigure('missing.svg', { baseDir: fixtures, path: 'x' }), /x：無法讀取 missing\.svg/);
 });
 
-test('自畫圖只放在 evidence 頁；kind 與 figure 擇一，路徑不可空白', async () => {
+test('自畫圖可用於 evidence 與 panels 頁；kind 與 figure 擇一，路徑不可空白', async () => {
   assert.throws(() => validateStory(story({ figure: '' })), /visual\.figure 格式不正確/);
   assert.throws(() => validateStory(story({ figure: 'figure.svg', kind: 'rank' })), /兩者擇一/);
   assert.throws(() => validateStory(story({})), /畫成 SVG 後改填 \{"figure": "檔名\.svg"\}/);
   await assert.rejects(build(story({ figure: 'missing.svg' }), { baseDir: fixtures }), /第 1 頁 visual\.figure：無法讀取/);
-  assert.throws(() => validateStory({ mode: 'read', pages: [{ type: 'panels', claim: '兩格', sources: { source: '稿' },
-    visual: { items: [{ title: '甲', visual: { figure: 'figure.svg' } }, { title: '乙', visual: '文字' }] } }] }), /第 1 格/);
+  const panelStory = { pages: [{ type: 'panels', claim: '收件 12 件後審核剩 8 件', sources: { source: '稿' }, notes: '說明流程。',
+    visual: { items: [{ title: '甲', visual: { figure: 'figure.svg' } }, { title: '乙', visual: '審核後剩 8 件。' }] } }] };
+  assert.doesNotThrow(() => validateStory(panelStory));
+  const { buffer } = await build(panelStory, { baseDir: fixtures });
+  const zip = await JSZip.loadAsync(buffer);
+  assert.equal(Object.keys(zip.files).filter((n) => /^ppt\/media\/.*\.svg$/.test(n)).length, 1);
+  assert.throws(() => validateStory({ pages: [{ type: 'panels', claim: '兩格', sources: { source: '稿' },
+    visual: { items: [{ title: '甲', visual: { figure: 'figure.svg', kind: 'rank' } }, { title: '乙', visual: '文字' }] } }] }), /第 1 格.*擇一填寫/);
 });
 
 test('報告的自畫圖由產生器放進 HTML、與圖表共用圖號，重產結果相同並通過嚴格驗收', (t) => {
